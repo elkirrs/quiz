@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./app
         run: npm install
-          
+
       # 4. Build Vite project
       - name: Build project
         working-directory: ./app
