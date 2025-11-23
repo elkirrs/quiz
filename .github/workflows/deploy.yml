@@ -22,18 +22,18 @@ jobs:
 
       # 3. Install dependencies
       - name: Install dependencies
+        working-directory: ./app
         run: npm install
-        working_directory: ./app
+          
+          # 4. Build Vite project
+          - name: Build project
+            working-directory: ./app
+            run: npm run build
 
-      # 4. Build Vite project
-      - name: Build project
-        run: npm run build
-        working_directory: ./app
-
-      # 5. Deploy to gh-pages of same repo
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./app/dist
+          # 5. Deploy to gh-pages of same repo
+          - name: Deploy to gh-pages
+            uses: peaceiris/actions-gh-pages@v3
+            with:
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              publish_branch: gh-pages
+              publish_dir: ./app/dist
