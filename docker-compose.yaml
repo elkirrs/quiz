@@ -1,0 +1,13 @@
+services:
+
+  node:
+    build:
+      context: ./
+      dockerfile: node.Dockerfile
+    container_name: node-wq
+    tty: true
+    ports:
+      - 5173:5173
+    restart: unless-stopped
+    volumes:
+      - ./app:/var/www/web
