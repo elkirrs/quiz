@@ -65,7 +65,7 @@
 
       </div>
       <!-- MANUAL -->
-      <div v-if="mode === 'manual' && !isBtnContinue" class="pb-5">
+      <div v-if="mode === 'manual' && !isBtnContinue" class="pb-1">
         <v-text-field
           v-model="userAnswer"
           clearable
@@ -80,37 +80,53 @@
       </div>
     </div>
 
-    <v-alert
-      v-if="feedback"
-      :type="typeCorrect"
-      class="my-4"
-      density="comfortable"
-      variant="tonal"
-      border="start"
-    >
-      {{ feedback }}
-    </v-alert>
+    <div>
+      <v-text-field
+        v-if="answeredIsView"
+        v-model="answeredFeedback"
+        disabled
+        label="Entered the translation of the word..."
+        variant="outlined"
+        density="comfortable"
+        color="teal"
+      ></v-text-field>
+    </div>
 
-    <v-btn
-      block
-      size="large"
-      color="teal"
-      v-if="isBtnAnswer"
-      @click="checkAnswer"
-    >To answer
-    </v-btn>
+    <div class="pb-4">
+      <v-alert
+        v-if="feedback"
+        :type="typeCorrect"
+        density="comfortable"
+        variant="tonal"
+        border="start"
+      >
+        <div v-html="feedback"></div>
+      </v-alert>
+    </div>
 
-    <v-btn
-      block
-      size="large"
-      color="teal"
-      v-if="isBtnContinue"
-      @click="nextWord"
-      ref="continueBtn"
-    >
-      To continue
-    </v-btn>
+    <div>
+      <v-btn
+        block
+        size="large"
+        color="teal"
+        v-if="isBtnAnswer"
+        @click="checkAnswer"
+      >To answer
+      </v-btn>
+    </div>
 
+    <div>
+      <v-btn
+        block
+        size="large"
+        color="teal"
+        v-if="isBtnContinue"
+        @click="nextWord"
+        ref="continueBtn"
+      >
+        To continue
+      </v-btn>
+    </div>
 
     <v-row justify="center"
            v-if="isBtnResetQuiz"
@@ -130,7 +146,6 @@
         </v-progress-circular>
       </div>
     </v-row>
-
 
     <v-row justify="center">
       <v-col cols="6">
@@ -158,10 +173,9 @@
       </v-col>
     </v-row>
 
-
     <div class="text-caption mt-4 text-right">
       Total: {{ stats.total }} | Correct: {{ stats.correct }} | Incorrect: {{ stats.incorrect }} | Remaining:
-      {{ stats.remained }}
+      {{ stats.remained }} | Attempt: {{ stats.attempt }}
     </div>
   </div>
 </template>
@@ -183,6 +197,8 @@ export default {
       listWords: [],
       userAnswer: '',
       feedback: '',
+      answeredFeedback: '',
+      answeredIsView: false,
       helper: null,
       isCorrect: false,
       isBtnContinue: false,
@@ -200,6 +216,7 @@ export default {
         incorrect: 0,
         total: 0,
         remained: 0,
+        attempt: 0,
       },
       resultPercentage: 0,
       resultColor: 'pink-darken-4',
@@ -270,7 +287,7 @@ export default {
   methods: {
     loadWords() {
       this.listWords = []
-      this.stats = {correct: 0, incorrect: 0, total: 0, remained: 0}
+      this.stats = {correct: 0, incorrect: 0, total: 0, remained: 0, attempt: 0}
 
       if (this.settings.quiz === 'verbs') {
         this.settings.verbs.forEach(unitPath => {
@@ -326,10 +343,10 @@ export default {
       const input = this.normalize(this.userAnswer)
       const correct = this.prepareCorrectWord(this.currentWordObj.correctAnswer);
 
+      this.answeredIsView = false;
       this.isCorrect = false;
       this.typeCorrect = 'error'
-      this.feedback = `Incorrect. Correct: ${this.currentWordObj.correctAnswer}`;
-
+      this.feedback = `Incorrect. Correct: <strong>${this.currentWordObj.correctAnswer}</strong>`;
 
       if (input.length === 0) {
         this.typeCorrect = 'warning'
@@ -355,6 +372,7 @@ export default {
       }
 
       if (isCorrectAnswer) {
+        this.answeredIsView = false;
         this.isCorrect = true;
         this.typeCorrect = 'success'
         this.feedback = 'Correct!'
@@ -366,6 +384,8 @@ export default {
         if (this.settings?.lastMistake) {
           this.listWords.push(this.currentWord)
         }
+        this.answeredFeedback = this.userAnswer;
+        this.answeredIsView = true;
         this.userAnswer = ''
         this.handlerButton(false, true, false)
       }
@@ -388,6 +408,7 @@ export default {
       this.checkAnswer()
     },
     nextWord() {
+      this.answeredIsView = false;
       this.helper = null
 
       if (this.usedIndexes.size === this.listWords.length) {
@@ -450,11 +471,12 @@ export default {
     },
     updateStats(correct) {
       if (correct) {
-        this.stats.correct++
+        this.stats.correct++;
+        this.stats.remained--;
       } else {
-        this.stats.incorrect++
+        this.stats.incorrect++;
       }
-      this.stats.remained--
+      this.stats.attempt++;
 
       this.$emit("answer-list", this.answerList)
     },
@@ -520,10 +542,10 @@ export default {
       const totalWords = this.stats.total;
       const correctAnswers = this.stats.total - this.stats.incorrect;
       this.resultPercentage = Math.round((correctAnswers / totalWords) * 100);
+      const index = 0;
       if (this.resultPercentage > 0) {
         const index = Math.min(Math.floor(this.resultPercentage / 10), this.resultColors.length - 1);
       } else {
-        const index = 0;
         this.resultPercentage = 0
       }
       this.resultColor = this.resultColors[index];
