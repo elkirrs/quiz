@@ -324,6 +324,12 @@ export const words = [
     "pronunciation": "\/ˈseɪlɪŋ\/",
     "example": "If you don’t know anything about the sea, I wouldn’t suggest you try <b>sailing<\/b>."
 }, {
+    "en": "sensitive",
+    "ru": "чувствительный",
+    "part_of_speech": "adj",
+    "pronunciation": "sensətɪv\/",
+    "example": "The water crashing into his lungs felt like scalding oil on his <b>sensitive<\/b> pulmonary tissue."
+  }, {
     "en": "shot put",
     "ru": "толкание ядра",
     "part_of_speech": "n",
@@ -361,7 +367,7 @@ export const words = [
     "example": "I'm not a <b>sporty<\/b> person, but I like to keep fit."
 }, {
     "en": "squash",
-    "ru": "кабачок, тыква",
+    "ru": "сквош",
     "part_of_speech": "n",
     "pronunciation": "\/skwɒʃ\/",
     "example": "<b>Squash<\/b> is a fast sport that you play inside."
