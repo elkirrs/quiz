@@ -29,6 +29,9 @@ jobs:
         working-directory: ./app
         run: npm run build
 
+      - name: List dist files
+        run: ls -la ./app/dist
+
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
