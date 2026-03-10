@@ -199,7 +199,7 @@ export const words = [
     "example": "Could you <b>lend<\/b> me your phone, please? I need to make a call."
 }, {
     "en": "lie",
-    "ru": "ложь",
+    "ru": "лгать",
     "part_of_speech": "v",
     "pronunciation": "\/laɪ\/",
     "example": "If you <b>lie<\/b> all the time, people will never believe what you say."
@@ -265,7 +265,7 @@ export const words = [
     "example": "He wrote novels, and <b>poetry<\/b>, and he was also a travel writer."
 }, {
     "en": "potion",
-    "ru": "зелье",
+    "ru": "зелье, настойка",
     "part_of_speech": "n",
     "pronunciation": "\/ˈpəʊʃn\/",
     "example": "In one version of <i>Romeo and Juliet<\/i>, Juliet drank a <b>potion<\/b> that really was poisoned."
@@ -319,13 +319,13 @@ export const words = [
     "example": "<b>Servants<\/b> in large houses were expected to be seen and not heard by their employers."
 }, {
     "en": "shepherd",
-    "ru": "пасти",
+    "ru": "пастух",
     "part_of_speech": "n",
     "pronunciation": "\/ˈʃepəd\/",
     "example": "The work of a <b>shepherd<\/b> was to take care of his sheep."
 }, {
     "en": "sight",
-    "ru": "взгляд",
+    "ru": "взгляд, точка зрения",
     "part_of_speech": "n",
     "pronunciation": "\/saɪt\/",
     "example": "I hate the <b>sight<\/b> of blood and people killing each other. "
@@ -415,7 +415,7 @@ export const words = [
     "example": "The <b>villains<\/b> who broke into the local shop were eventually caught."
 }, {
     "en": "wander away",
-    "ru": "убраться, блуждать вдали",
+    "ru": "убраться, брести вдали",
     "part_of_speech": "v",
     "pronunciation": "\/ˈwɒndə(r) əˈweɪ\/",
     "example": "Once the guest speaker left, many people in<br>the crowd began to <b>wander away<\/b>."
