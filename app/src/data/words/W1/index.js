@@ -5,12 +5,14 @@ import {words as part04} from "./words02.js";
 import {phrases as part05} from "./phrase.js";
 import {phraseVerbs as part07} from "./phrase-verbs-02.js";
 import {words as part08} from "./words03.js";
+import {words04 as part09} from "./words04.js";
 
 
 export const allParts = {
   Words_01: part02,
   Words_02: part04,
   Words_03: part08,
+  Words_04: part09,
   Verb_Phrases: part01,
   Verb_Phrases_02: part07,
   Phrase: part05,

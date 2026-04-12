@@ -102,6 +102,4 @@ export const phraseVerbs = [
   {"en": "get to know", "ru": "узнавать, ознакомляться, познакомиться", "part_of_speech": "v", "pronunciation": "", "example": ""},
   {"en": "feels like", "ru": "хотеть", "part_of_speech": "v", "pronunciation": "", "example": ""},
   {"en": "face up", "ru": "встретить", "part_of_speech": "v", "pronunciation": "", "example": ""},
-  // {"en": "", "ru": "", "part_of_speech": "v", "pronunciation": "", "example": ""},
-
 ]
