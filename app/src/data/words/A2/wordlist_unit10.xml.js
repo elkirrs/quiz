@@ -67,7 +67,7 @@ export const words = [
     "example": "If you have a <b>complaint<\/b>, you can fill in a form or speak to the manager."
 }, {
     "en": "copy",
-    "ru": "копия",
+    "ru": "копировать",
     "part_of_speech": "v",
     "pronunciation": "\/ˈkɒpi\/",
     "example": "I asked Steve to <b>copy<\/b> the sales figures into this document, but they aren’t here."
@@ -79,7 +79,7 @@ export const words = [
     "example": "It isn’t enough to store information on a <b>database<\/b>, you need to be able to find it easily."
 }, {
     "en": "decorate",
-    "ru": "украсить",
+    "ru": "украсить, украшать",
     "part_of_speech": "v",
     "pronunciation": "\/ˈdekəreɪt\/",
     "example": "What colour are you going to <b>decorate<\/b> your bedroom?"
@@ -325,13 +325,13 @@ export const words = [
     "example": "Using <b>search engines<\/b> is now the normal way of finding information."
 }, {
     "en": "searchable",
-    "ru": "доступен для поиска",
+    "ru": "поисковый",
     "part_of_speech": "adj",
     "pronunciation": "\/ˈsɜːtʃəbl\/",
     "example": "He built a single, easily <b>searchable<\/b> database for students to access information."
 }, {
     "en": "skinny latte",
-    "ru": "Скинни–латте",
+    "ru": "латте на обезжиренном мроорке",
     "part_of_speech": "n",
     "pronunciation": "\/skɪni ˈlæteɪ\/",
     "example": "The <b>skinny latte<\/b> is a coffee with less fat – a great idea when you’re on a diet."
