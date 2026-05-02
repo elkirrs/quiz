@@ -319,7 +319,7 @@ export const words = [
     "example": "I’d love to work for a newspaper and <b>photograph<\/b> celebrities."
 }, {
     "en": "plague",
-    "ru": "чума",
+    "ru": "мучить, досаждать",
     "part_of_speech": "v",
     "pronunciation": "\/pleɪɡ\/",
     "example": "This type of crime is starting to <b>plague<\/b> this area, and needs to be dealt with."
