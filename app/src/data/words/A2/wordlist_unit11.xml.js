@@ -181,7 +181,7 @@ export const words = [
     "example": "I’ve had some <b>fantastic news<\/b>. I’ve got into my first choice of university."
 }, {
     "en": "fond of",
-    "ru": "любящий",
+    "ru": "увлеченный",
     "part_of_speech": "adj",
     "pronunciation": "\/ˈfɒnd əv\/",
     "example": "I was very <b>fond of<\/b> my granddad, and was very sad when he died."
@@ -421,7 +421,7 @@ export const words = [
     "example": "It was a big surprise when they <b>split up<\/b>."
 }, {
     "en": "stroke",
-    "ru": "удар",
+    "ru": "инфаркт",
     "part_of_speech": "n",
     "pronunciation": "\/strəʊk\/",
     "example": "My father had a <b>stroke<\/b> that left him paralysed down one side."
