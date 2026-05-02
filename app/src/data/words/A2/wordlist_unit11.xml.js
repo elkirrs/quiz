@@ -325,7 +325,7 @@ export const words = [
     "example": "This type of crime is starting to <b>plague<\/b> this area, and needs to be dealt with."
 }, {
     "en": "plant",
-    "ru": "растение",
+    "ru": "сажать, сеять",
     "part_of_speech": "v",
     "pronunciation": "\/plɑːnt\/",
     "example": "Yesterday I decided to <b>plant<\/b> some cabbages in my garden, and now I have backache."
