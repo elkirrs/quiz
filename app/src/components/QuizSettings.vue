@@ -274,7 +274,7 @@ export default {
     sliderMaxValue: 100,
     sliderMinValue: 20,
     sliderStepValue: 1,
-    sliderShow: false,
+    sliderShow: true,
     countWords: 0,
 
     itemsQuiz: app.settings.itemsQuiz,
