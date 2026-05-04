@@ -80,7 +80,7 @@
       </div>
     </div>
 
-    <div>
+    <div v-if="mode === 'manual'">
       <v-text-field
         v-if="answeredIsView"
         v-model="answeredFeedback"
@@ -145,6 +145,11 @@
           </div>
         </v-progress-circular>
       </div>
+      <div class="d-flex ga-12 justify-center">
+        <v-badge location="top right" color="teal" :content="spentTime">
+        </v-badge>
+      </div>
+
     </v-row>
 
     <v-row justify="center">
@@ -211,6 +216,8 @@ export default {
       answerList: [],
       question: '',
       persistentHint: true,
+      startTime: null,
+      endTime: null,
       stats: {
         correct: 0,
         incorrect: 0,
@@ -275,6 +282,21 @@ export default {
         return 'Use for the separator \' , \' in answer'
       }
       return null
+    },
+    spentTime() {
+
+      const start = this.startTime;
+      const end = this.endTime;
+
+      const diffMs = end - start;
+
+      const seconds = Math.floor(diffMs / 1000) % 60;
+      const minutes = Math.floor(diffMs / (1000 * 60)) % 60;
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+
+      return `${hours.toString().padStart(2, '0')}:` +
+            `${minutes.toString().padStart(2, '0')}:` +
+            `${seconds.toString().padStart(2, '0')}`;
     }
   },
   mounted() {
@@ -287,6 +309,9 @@ export default {
   methods: {
     loadWords() {
       this.listWords = []
+      if (!this.startTime) {
+        this.startTime = new Date()
+      }
       this.stats = {correct: 0, incorrect: 0, total: 0, remained: 0, attempt: 0}
 
       if (this.settings.quiz === 'verbs') {
@@ -416,6 +441,7 @@ export default {
         this.feedback = "You have completed all the words!"
         this.calculateProgress()
         this.handlerButton(false, false, true)
+        this.endTime = new Date()
         return
       }
 
@@ -537,6 +563,7 @@ export default {
       this.answerList = []
       this.helper = null
       this.loadWords()
+      this.startTime = new Date()
     },
     calculateProgress() {
       const totalWords = this.stats.total;
