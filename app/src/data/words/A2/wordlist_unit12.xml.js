@@ -451,13 +451,13 @@ export const words = [
     "example": "Mount Etna is a <b>volcano<\/b> in Sicily."
 }, {
     "en": "wage",
-    "ru": "заработная плата",
+    "ru": "вести, проводить, осуществлять",
     "part_of_speech": "v",
     "pronunciation": "\/weɪdʒ\/",
     "example": "There will always be cruel people who want to fight and <b>wage<\/b> wars."
 }, {
     "en": "warm",
-    "ru": "теплый",
+    "ru": "греть, нагревать, согревать",
     "part_of_speech": "v",
     "pronunciation": "\/wɔːm\/",
     "example": "It was very cold so we were grateful for the fire that helped to <b>warm<\/b> us."
