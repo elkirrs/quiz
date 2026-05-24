@@ -61,6 +61,11 @@
               v-model:dialog="showRuleDialog"
             />
 
+            <ModalVerbs
+              :key="'rule-' + resetKey"
+              v-model:dialog="showModalWerbsDialog"
+            />
+
           </div>
 
           <v-dialog v-model="dialog" max-width="400">
@@ -131,7 +136,14 @@
               size="large"
             >
             </v-btn>
-
+            <v-btn
+              color="teal"
+              key="3"
+              @click="showModalWerbsDialog = true"
+              icon="mdi-chemical-weapon"
+              size="large"
+            >
+            </v-btn>
           </v-speed-dial>
         </v-fab>
       </div>
@@ -156,6 +168,7 @@ const resetKey = ref(0)
 const showTableWordListDialog = ref(false)
 const showTableResultListDialog = ref(false)
 const showRuleDialog = ref(false)
+const showModalWerbsDialog =  ref(false)
 
 const open = shallowRef(false)
 const fabPosition = shallowRef('fixed')
