@@ -7,7 +7,7 @@ const unit11UpperIntermediate = [
         "example": "The <b>alignment<\/b> of the Earth and Sun helped us to create our modern calendar."
     }, {
         "en": "alimentary tract",
-        "ru": "Елиментарный тракт",
+        "ru": "пищеварительный тракт",
         "part_of_speech": "n",
         "pronunciation": "\/ˌælɪmentəri ˈtrækt\/",
         "example": "Most bacteria are found in the teeth, throat and <b>alimentary tract<\/b>."
@@ -43,7 +43,7 @@ const unit11UpperIntermediate = [
         "example": "The house has wonderful views across the <b>bay<\/b>."
     }, {
         "en": "bookcase",
-        "ru": "Книжный шкаф",
+        "ru": "книжный шкаф",
         "part_of_speech": "n",
         "pronunciation": "\/ˈbʊkkeɪs\/",
         "example": "My <b>bookcase<\/b> is mostly filled with romantic novels."
@@ -127,7 +127,7 @@ const unit11UpperIntermediate = [
         "example": "Can you remember your <b>dream<\/b> from last night?"
     }, {
         "en": "dream home",
-        "ru": "Мечта домой",
+        "ru": "дом мечты",
         "part_of_speech": "n",
         "pronunciation": "\/ˈdriːm həʊm\/",
         "example": "My <b>dream home<\/b> would have a swimming pool and a home cinema."
@@ -139,7 +139,7 @@ const unit11UpperIntermediate = [
         "example": "We lost our house in an <b>earthquake<\/b>."
     }, {
         "en": "earworm",
-        "ru": "ушной червь",
+        "ru": "навязчивая песня; мелодия, застрявшая в голове",
         "part_of_speech": "n",
         "pronunciation": "\/ˈɪəwɜːm\/",
         "example": "An <b>earworm<\/b> is a stong that gets stuck in your head."
@@ -157,7 +157,7 @@ const unit11UpperIntermediate = [
         "example": "What was so special about the house to make you <b>fall in love<\/b> with it?"
     }, {
         "en": "flatpack",
-        "ru": "Flatpack",
+        "ru": "в разобранном виде; мебель из ИКЕА",
         "part_of_speech": "adj",
         "pronunciation": "\/ˈflætpæk\/",
         "example": "This table is <b>flatpack<\/b>, so you have to build it at home."
@@ -181,13 +181,13 @@ const unit11UpperIntermediate = [
         "example": "I wish I spoke English <b>fluently<\/b>."
     }, {
         "en": "follicle mite",
-        "ru": "Фолликулс",
+        "ru": "клещ в волосяной луковице",
         "part_of_speech": "n",
         "pronunciation": "\/ˈfɒlɪkl ˌmaɪt\/",
         "example": "A <b>follicle mite<\/b> eats dead skin cells."
     }, {
         "en": "genius",
-        "ru": "гениальность",
+        "ru": "гений",
         "part_of_speech": "n",
         "pronunciation": "\/ˈdʒiːniəs\/",
         "example": "If you can follow these complicated instructions, you’re a <b>genius<\/b>."
@@ -199,7 +199,7 @@ const unit11UpperIntermediate = [
         "example": "The Internet enables communication around the <b>globe<\/b>."
     }, {
         "en": "grin",
-        "ru": "ухмылка",
+        "ru": "улыбаться, ухмыляться",
         "part_of_speech": "v",
         "pronunciation": "\/ɡrɪn\/",
         "example": "I don’t like it, but I’ll <b>grin<\/b> and bear it."
@@ -211,7 +211,7 @@ const unit11UpperIntermediate = [
         "example": "Do you have any moans and <b>groans<\/b> about your job?"
     }, {
         "en": "hairbands",
-        "ru": "полосы волос",
+        "ru": "резинки для волос",
         "part_of_speech": "n pl",
         "pronunciation": "\/ˈheəbændz\/",
         "example": "I bought socks for Ben and <b>hairbands<\/b> for Jane."
@@ -235,7 +235,7 @@ const unit11UpperIntermediate = [
         "example": "The follicle mite <b>harmlessly<\/b> eats dead skin cells."
     }, {
         "en": "helpline",
-        "ru": "Хелеспловка",
+        "ru": "горячая линия; служба поддержки",
         "part_of_speech": "n",
         "pronunciation": "\/ˈhelplaɪn\/",
         "example": "My new computer won’t work. I’ll phone the <b>helpline<\/b>."
@@ -253,7 +253,7 @@ const unit11UpperIntermediate = [
         "example": "Can I ask you a <b>hypothetical<\/b> question? "
     }, {
         "en": "in the wake of (something)",
-        "ru": "После (что-то)",
+        "ru": "вследствие чего-то; после чего-то",
         "part_of_speech": "",
         "pronunciation": "\/ˌɪn ðə ˈweɪk əv ...\/",
         "example": "<b>In the wake of<\/b> a natural disaster, sections of the Internet would go offline."
@@ -277,7 +277,7 @@ const unit11UpperIntermediate = [
         "example": "One type of parasite can <b>invade<\/b> the human brain."
     }, {
         "en": "leap year",
-        "ru": "прыжок в год",
+        "ru": "високосный год",
         "part_of_speech": "n",
         "pronunciation": "\/ˈliːp jɜː(r)\/",
         "example": "A <b>leap year<\/b> happens every four years."
@@ -295,7 +295,7 @@ const unit11UpperIntermediate = [
         "example": "Gmail is a popular <b>mail server<\/b>."
     }, {
         "en": "mindboggling",
-        "ru": "Mindboggling",
+        "ru": "ошеломляющий; поразительный",
         "part_of_speech": "adj",
         "pronunciation": "\/ˈmaɪndˌbɒɡlɪŋ\/",
         "example": "A <b>mindboggling<\/b> number of bacteria live on our bodies."
@@ -343,7 +343,7 @@ const unit11UpperIntermediate = [
         "example": "The Internet would be affected by a <b>nuclear attack<\/b> or natural disaster."
     }, {
         "en": "offline",
-        "ru": "в автономном режиме",
+        "ru": "офлайн; не в сети",
         "part_of_speech": "adj",
         "pronunciation": "\/ˌɒfˈlaɪn\/",
         "example": "I tried to message you but you were <b>offline<\/b>."
@@ -379,7 +379,7 @@ const unit11UpperIntermediate = [
         "example": "Before the invention of the <b>printing press<\/b>, everything had to be written by hand."
     }, {
         "en": "puzzle over",
-        "ru": "головоломка",
+        "ru": "ломать голову над; размышлять над",
         "part_of_speech": "v",
         "pronunciation": "\/ˌpʌzl ˈəʊvə(r)\/",
         "example": "What questions do you <b>puzzle over<\/b>?"
@@ -445,7 +445,7 @@ const unit11UpperIntermediate = [
         "example": "The parasite feeds on dead <b>skin cells<\/b>."
     }, {
         "en": "soundscape",
-        "ru": "Soundscape",
+        "ru": "звуковой ландшафт; звуковая обстановка",
         "part_of_speech": "n",
         "pronunciation": "\/ˈsaʊndskeɪp\/",
         "example": "<b>Soundscape<\/b> is a list of dream themes that you can choose from."
