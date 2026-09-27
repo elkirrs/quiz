@@ -1,4 +1,4 @@
-const words = [
+export const words = [
   {
     en: "accumulation",
     ru: "накопление, аккумуляция",

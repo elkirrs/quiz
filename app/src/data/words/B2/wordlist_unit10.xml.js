@@ -1,4 +1,4 @@
-const words = [
+export const words = [
   {
     en: "a sharp tongue",
     ru: "острый язык",

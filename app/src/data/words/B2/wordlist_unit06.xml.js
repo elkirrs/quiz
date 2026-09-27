@@ -1,4 +1,4 @@
-const words = [
+export const words = [
   {
     en: "ailing",
     ru: "испытывающий трудности, переживающий спад",

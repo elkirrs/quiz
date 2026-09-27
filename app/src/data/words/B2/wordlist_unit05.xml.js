@@ -1,4 +1,4 @@
-const words = [
+export const words = [
   {
     en: "a good talking to",
     ru: "Хороший разговор с",
