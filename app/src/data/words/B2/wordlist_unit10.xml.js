@@ -77,7 +77,7 @@ const unit10UpperIntermediate = [
   },
   {
     en: "face the fact",
-    ru: "признать факт; смотреть правде в глаза",
+    ru: "признать факт, смотреть правде в глаза",
     part_of_speech: "",
     pronunciation: "\/ˌfeɪs ðə ˈfækt\/",
     example:
@@ -85,7 +85,7 @@ const unit10UpperIntermediate = [
   },
   {
     en: "finding my feet",
-    ru: "привыкаю; нахожу свою опору",
+    ru: "привыкаю, нахожу свою опору",
     part_of_speech: "",
     pronunciation: "\/ˌfaɪndɪŋ maɪ ˈfiːt\/",
     example: "Uni is a big change, but I’m slowly <b>finding my feet<\/b>.",
@@ -114,7 +114,7 @@ const unit10UpperIntermediate = [
   },
   {
     en: "heart-to-heart",
-    ru: "откровенный разговор; разговор по душам",
+    ru: "откровенный разговор, разговор по душам",
     part_of_speech: "n",
     pronunciation: "\/ˌhɑːt tə ˈhɑːt\/",
     example:
@@ -158,7 +158,7 @@ const unit10UpperIntermediate = [
   },
   {
     en: "moral",
-    ru: "мораль; урок",
+    ru: "мораль, урок",
     part_of_speech: "n",
     pronunciation: "\/ˈmɒrəl\/",
     example: "The <b>moral<\/b> of the story is to be kind to your neighbours.",
@@ -173,7 +173,7 @@ const unit10UpperIntermediate = [
   },
   {
     en: "on its last legs",
-    ru: "на последнем издыхании; на последнем дыхании",
+    ru: "на последнем издыхании, на последнем дыхании",
     part_of_speech: "",
     pronunciation: "\/ɒn ɪts ˌlɑːst ˈleɡz\/",
     example: "My laptop is six years old and <b>on its last legs<\/b>.",
@@ -187,14 +187,14 @@ const unit10UpperIntermediate = [
   },
   {
     en: "pulling your leg",
-    ru: "подшучивает над тобой; дурачит тебя",
+    ru: "подшучивает над тобой, дурачит тебя",
     part_of_speech: "",
     pronunciation: "\/ˌpʊlɪŋ jə ˈleɡ\/",
     example: "Don’t take him seriously – he was just <b>pulling your leg<\/b>.",
   },
   {
     en: "putting on a brave face",
-    ru: "делать вид, что всё в порядке; держаться храбро",
+    ru: "делать вид, что всё в порядке, держаться храбро",
     part_of_speech: "",
     pronunciation: "\/ˌpʌtɪŋ ɒn ə breɪv ˈfeɪs\/",
     example: "I’ve broken my arm, but I’m <b>putting on a brave face<\/b>.",
@@ -229,14 +229,14 @@ const unit10UpperIntermediate = [
   },
   {
     en: "split up",
-    ru: "расстаться; разойтись",
+    ru: "расстаться, разойтись",
     part_of_speech: "v",
     pronunciation: "\/splɪt ˈʌp\/",
     example: "I’m not seeing Mike anymore – we <b>split up<\/b>.",
   },
   {
     en: "trade",
-    ru: "торговля; обмен",
+    ru: "торговля, обмен",
     part_of_speech: "n",
     pronunciation: "\/treɪd\/",
     example: "The Vikings used <b>trade<\/b> to get the goods they needed.",

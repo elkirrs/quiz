@@ -94,7 +94,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "follow in (somebody’s) footsteps",
-    ru: "идти по чужим стопам; следовать чьему-то пути",
+    ru: "идти по чужим стопам, следовать чьему-то пути",
     part_of_speech: "",
     pronunciation: "\/ˌfɒləʊ ɪn ... ˈfʊtsteps\/",
     example:
@@ -102,7 +102,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "follow my nose",
-    ru: "идти куда глаза глядят; ориентируясь на интуицию",
+    ru: "идти куда глаза глядят, ориентируясь на интуицию",
     part_of_speech: "",
     pronunciation: "\/ˌfɒləʊ maɪ ˈnəʊz\/",
     example: "I like to just <b>follow my nose<\/b> around a city.",
@@ -116,7 +116,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "getting me down",
-    ru: "подавляет меня; угнетает меня",
+    ru: "подавляет меня, угнетает меня",
     part_of_speech: "",
     pronunciation: "\/ˌɡetɪŋ mi ˈdaʊn\/",
     example: "This awful weather is really <b>getting me down<\/b>.",
@@ -145,7 +145,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "I got the bug",
-    ru: "меня захватила эта идея; я заразился этим",
+    ru: "меня захватила эта идея, я заразился этим",
     part_of_speech: "",
     pronunciation: "\/aɪ ˌɡɒt ðə ˈbʌɡ\/",
     example: "Then <b>I got the bug<\/b>, so I travelled around South America.",
@@ -181,7 +181,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "leisure time",
-    ru: "свободное время; время досуга",
+    ru: "свободное время, время досуга",
     part_of_speech: "n",
     pronunciation: "\/ˈleʒə taɪm\/",
     example: "I work long hours, so don’t have much <b>leisure time<\/b>.",
@@ -195,7 +195,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "marriage",
-    ru: "брак; супружество",
+    ru: "брак, супружество",
     part_of_speech: "n",
     pronunciation: "\/ˈmærɪdʒ\/",
     example: "Mark and Laura have a happy <b>marriage<\/b>.",
@@ -209,7 +209,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "pace",
-    ru: "темп; ритм",
+    ru: "темп, ритм",
     part_of_speech: "n",
     pronunciation: "\/peɪs\/",
     example: "The <b>pace<\/b> of my life is slow and relaxing.",
@@ -230,7 +230,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "philosophy",
-    ru: "философия; жизненная позиция",
+    ru: "философия, жизненная позиция",
     part_of_speech: "n",
     pronunciation: "\/fəˈlɒsəfi\/",
     example: "My life <b>philosophy<\/b> is grasp every moment’.",
@@ -279,7 +279,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "rare",
-    ru: "редкий; необычный",
+    ru: "редкий, необычный",
     part_of_speech: "adj",
     pronunciation: "\/reə(r)\/",
     example:
@@ -287,7 +287,7 @@ const unit12UpperIntermediate = [
   },
   {
     en: "recharge",
-    ru: "восстанавливаться; подзаряжаться",
+    ru: "восстанавливаться, подзаряжаться",
     part_of_speech: "v",
     pronunciation: "\/ˌriːˈtʃɑːdʒ\/",
     example: "I relax and <b>recharge</b> my batteries at the weekend.",

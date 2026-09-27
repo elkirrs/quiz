@@ -502,7 +502,7 @@ const unit06UpperIntermediate = [
   },
   {
     en: "insult",
-    ru: "оскорбление; оскорблять",
+    ru: "оскорбление, оскорблять",
     part_of_speech: "n \/ v",
     pronunciation: "\/ɪnˈsʌlt\/",
     example: "I’m not a liar! What an <b>insult<\/b>!",
@@ -662,7 +662,7 @@ const unit06UpperIntermediate = [
   },
   {
     en: "permit",
-    ru: "разрешение; разрешать",
+    ru: "разрешение, разрешать",
     part_of_speech: "n \/ v",
     pronunciation: "\/ˈpɜːmɪt \/ pəˈmɪt\/",
     example: "You need to get a <b>permit<\/b> before you can learn to drive.",
@@ -792,7 +792,7 @@ const unit06UpperIntermediate = [
   },
   {
     en: "refund",
-    ru: "возврат денег; возвращать деньги",
+    ru: "возврат денег, возвращать деньги",
     part_of_speech: "n \/ v",
     pronunciation: "\/ˈriːfʌnd \/ rɪˈfʌnd\/",
     example:

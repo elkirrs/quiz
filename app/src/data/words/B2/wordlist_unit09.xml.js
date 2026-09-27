@@ -46,7 +46,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "big-headed",
-    ru: "самодовольный; кичливый",
+    ru: "самодовольный, кичливый",
     part_of_speech: "adj",
     pronunciation: "\/ˌbɪɡ ˈhedɪd\/",
     example:
@@ -61,7 +61,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "bloke",
-    ru: "парень; мужик",
+    ru: "парень, мужик",
     part_of_speech: "n",
     pronunciation: "\/bləʊk\/",
     example: "I remember that <b>bloke<\/b> Dave.",
@@ -75,14 +75,14 @@ const unit09UpperIntermediate = [
   },
   {
     en: "boiling hot",
-    ru: "кипяще горячий; очень горячий",
+    ru: "кипяще горячий, очень горячий",
     part_of_speech: "",
     pronunciation: "\/ˌbɔɪlɪŋ ˈhɒt\/",
     example: "The water’s <b>boiling hot<\/b> so be very careful.",
   },
   {
     en: "bored stiff",
-    ru: "смертельно скучно; скучаю до смерти",
+    ru: "смертельно скучно, скучаю до смерти",
     part_of_speech: "",
     pronunciation: "\/bɔːd ˈstɪf\/",
     example: "Let’s do something! I’m <b>bored stiff<\/b>.",
@@ -209,7 +209,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "dead easy",
-    ru: "очень легко; проще простого",
+    ru: "очень легко, проще простого",
     part_of_speech: "",
     pronunciation: "\/ˌded ˈiːzi\/",
     example: "The exam was <b>dead easy<\/b>, and I got 100%.",
@@ -230,7 +230,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "drop me a line",
-    ru: "напишите мне; свяжитесь со мной",
+    ru: "напишите мне, свяжитесь со мной",
     part_of_speech: "",
     pronunciation: "\/ˌdrɒp mi ə ˈlaɪn\/",
     example: "If you’d like to come, <b>drop me a line<\/b>.",
@@ -265,7 +265,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "factual",
-    ru: "фактический; основанный на фактах",
+    ru: "фактический, основанный на фактах",
     part_of_speech: "adj",
     pronunciation: "\/ˈfæktʃuəl\/",
     example:
@@ -273,7 +273,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "fantasy world",
-    ru: "мир фантазий; фантастический мир",
+    ru: "мир фантазий, фантастический мир",
     part_of_speech: "n",
     pronunciation: "\/ˈfæntəsi ˌwɜːld\/",
     example: "I live in a 1950s <b>fantasy world<\/b>.",
@@ -353,7 +353,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "get in touch",
-    ru: "связаться; связаться с кем-то",
+    ru: "связаться, связаться с кем-то",
     part_of_speech: "",
     pronunciation: "\/ˌɡet ɪn ˈtʌtʃ\/",
     example: "I thought I would <b>get in touch<\/b> to see how you’re doing.",
@@ -367,7 +367,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "gone to a lot of trouble",
-    ru: "постарался; приложил много усилий",
+    ru: "постарался, приложил много усилий",
     part_of_speech: "",
     pronunciation: "\/ˈɡɒn tə ə ˌlɒt əv ˈtrʌbl\/",
     example:
@@ -382,7 +382,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "great big",
-    ru: "очень большой; огромный",
+    ru: "очень большой, огромный",
     part_of_speech: "",
     pronunciation: "\/ɡreɪt ˈbɪɡ\/",
     example: "They live in a <b>great big<\/b> house in London.",
@@ -476,7 +476,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "like-minded",
-    ru: "со схожими взглядами; единомышленники",
+    ru: "со схожими взглядами, единомышленники",
     part_of_speech: "adj",
     pronunciation: "\/ˌlaɪk ˈmaɪndɪd\/",
     example: "I met <b>like<\/b>-<b>minded<\/b> people at university.",
@@ -602,7 +602,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "patronized",
-    ru: "чувствовать себя униженным; находиться под опекой",
+    ru: "чувствовать себя униженным, находиться под опекой",
     part_of_speech: "v",
     pronunciation: "\/ˈpætrənaɪzd\/",
     example:
@@ -652,7 +652,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "re-creation",
-    ru: "реконструкция; воссоздание",
+    ru: "реконструкция, воссоздание",
     part_of_speech: "n",
     pronunciation: "\/ˌriːkriˈeɪʃn\/",
     example: "We live in a <b>re<\/b>-<b>creation<\/b> of a 1950s home.",
@@ -695,7 +695,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "ruled",
-    ru: "руководствуется; управляется",
+    ru: "руководствуется, управляется",
     part_of_speech: "v",
     pronunciation: "\/ruːld\/",
     example: "She’s <b>ruled<\/b> by her head, not her heart.",
@@ -773,7 +773,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "sing-song",
-    ru: "песенка; распев",
+    ru: "песенка, распев",
     part_of_speech: "n",
     pronunciation: "\/ˈsɪŋ sɒŋ\/",
     example:
@@ -810,7 +810,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "source",
-    ru: "добывать; находить; приобретать",
+    ru: "добывать, находить, приобретать",
     part_of_speech: "v",
     pronunciation: "\/sɔːs\/",
     example: "How does he <b>source<\/b> things for the house?",
@@ -832,7 +832,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "supportive",
-    ru: "поддерживающий; поддержка",
+    ru: "поддерживающий, поддержка",
     part_of_speech: "adj",
     pronunciation: "\/səˈpɔːtɪv\/",
     example: "My wife is <b>supportive<\/b> of my decision.",
@@ -869,14 +869,14 @@ const unit09UpperIntermediate = [
   },
   {
     en: "treat",
-    ru: "угощение; удовольствие",
+    ru: "угощение, удовольствие",
     part_of_speech: "n",
     pronunciation: "\/triːt\/",
     example: "My dad bought gave us chocolate as a <b>treat<\/b>.",
   },
   {
     en: "twee",
-    ru: "слишком милый; жеманный",
+    ru: "слишком милый, жеманный",
     part_of_speech: "adj",
     pronunciation: "\/twiː\/",
     example:
@@ -906,7 +906,7 @@ const unit09UpperIntermediate = [
   },
   {
     en: "wide awake",
-    ru: "полностью бодрый; не спит",
+    ru: "полностью бодрый, не спит",
     part_of_speech: "",
     pronunciation: "\/ˌwaɪd əˈweɪk\/",
     example: "I’m <b>wide awake<\/b> so I don’t want to go to bed.",

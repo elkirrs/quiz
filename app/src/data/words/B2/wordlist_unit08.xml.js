@@ -94,7 +94,7 @@ const unit08UpperIntermediate = [
   },
   {
     en: "best-selling",
-    ru: "самый продаваемый; бестселлер",
+    ru: "самый продаваемый, бестселлер",
     part_of_speech: "adj",
     pronunciation: "\/ˌbest ˈselɪŋ\/",
     example:
@@ -131,7 +131,7 @@ const unit08UpperIntermediate = [
   },
   {
     en: "break down",
-    ru: "сломаться; выйти из строя",
+    ru: "сломаться, выйти из строя",
     part_of_speech: "v",
     pronunciation: "\/breɪk ˈdaʊn\/",
     example: "The car was old, but it didn’t <b>break down<\/b>.",
@@ -354,7 +354,7 @@ const unit08UpperIntermediate = [
   },
   {
     en: "extraordinary",
-    ru: "необыкновенный; удивительный",
+    ru: "необыкновенный, удивительный",
     part_of_speech: "adj",
     pronunciation: "\/ɪkˈstrɔːdnri\/",
     example: "North West’ is an <b>extraordinary<\/b> name to give a child.",
@@ -1003,7 +1003,7 @@ const unit08UpperIntermediate = [
   },
   {
     en: "workmanship",
-    ru: "мастерство; качество работы",
+    ru: "мастерство, качество работы",
     part_of_speech: "n",
     pronunciation: "\/ˈwɜːkmənʃɪp\/",
     example: "They admired the <b>workmanship<\/b> of the tree houses.",

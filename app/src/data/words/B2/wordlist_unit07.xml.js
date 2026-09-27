@@ -47,7 +47,7 @@ const unit07UpperIntermediate = [
   },
   {
     en: "bound",
-    ru: "обязательно; непременно",
+    ru: "обязательно, непременно",
     part_of_speech: "v",
     pronunciation: "\/baʊnd\/",
     example: "It’s <b>bound<\/b> to rain at the weekend.",
@@ -183,7 +183,7 @@ const unit07UpperIntermediate = [
   },
   {
     en: "dying for",
-    ru: "очень хочет; умирает от желания",
+    ru: "очень хочет, умирает от желания",
     part_of_speech: "",
     pronunciation: "\/ˈdaɪɪŋ fə(r)\/",
     example: "I’m so thirsty. I’m <b>dying for<\/b> a glass of water! ",
@@ -270,7 +270,7 @@ const unit07UpperIntermediate = [
   },
   {
     en: "hit the roof",
-    ru: "взбеситься; выйти из себя",
+    ru: "взбеситься, выйти из себя",
     part_of_speech: "",
     pronunciation: "\/ˌhɪt ðə ˈruːf\/",
     example: "My dad <b>hit the roof<\/b> when I crashed his car.",
@@ -381,21 +381,21 @@ const unit07UpperIntermediate = [
   },
   {
     en: "out of breath",
-    ru: "запыхавшийся; без дыхания",
+    ru: "запыхавшийся, без дыхания",
     part_of_speech: "",
     pronunciation: "\/ˌaʊt əv ˈbreθ\/",
     example: "I was <b>out of breath<\/b> after running for the bus.",
   },
   {
     en: "out of order",
-    ru: "не в порядке; неуместно",
+    ru: "не в порядке, неуместно",
     part_of_speech: "",
     pronunciation: "\/ˌaʊt əv ˈɔːdə(r)\/",
     example: "He was completely <b>out of order<\/b> to say that to you!",
   },
   {
     en: "overlook",
-    ru: "выходить окнами на; смотреть на",
+    ru: "выходить окнами на, смотреть на",
     part_of_speech: "v",
     pronunciation: "\/ˌəʊvəˈlʊk\/",
     example: "doesn't the Ritz Carlton <b>overlook<\/b> Central Park?",
@@ -490,7 +490,7 @@ const unit07UpperIntermediate = [
   },
   {
     en: "refuse",
-    ru: "отказываться; отказывать",
+    ru: "отказываться, отказывать",
     part_of_speech: "v",
     pronunciation: "\/rɪˈfjuːz\/",
     example: "I <b>refuse<\/b> to get a mortgage until I’m much older.",
@@ -541,7 +541,7 @@ const unit07UpperIntermediate = [
   },
   {
     en: "sizeable",
-    ru: "значительный; довольно большой",
+    ru: "значительный, довольно большой",
     part_of_speech: "adj",
     pronunciation: "\/ˈsaɪzəbl\/",
     example:
@@ -636,7 +636,7 @@ const unit07UpperIntermediate = [
   },
   {
     en: "worship",
-    ru: "боготворить; обожать",
+    ru: "боготворить, обожать",
     part_of_speech: "v",
     pronunciation: "\/ˈwɜːʃɪp\/",
     example: "I <b>worship</b> the ground you walk on.",
