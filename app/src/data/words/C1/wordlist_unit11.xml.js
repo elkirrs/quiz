@@ -1,4 +1,4 @@
-const unit11Advansed = [
+export const words = [
     {
         "en": "a round of drinks",
         "ru": "раунд напитков",
@@ -19,13 +19,13 @@ const unit11Advansed = [
         "example": "As a market analyst, I can tell you your idea has no future."
     }, {
         "en": "antiquated",
-        "ru": "устарев",
+        "ru": "устаревший",
         "part_of_speech": "adj",
         "pronunciation": "ˈæntɪkweɪtɪd",
         "example": "Don't quote antiquated legal procedures."
     }, {
         "en": "appalling",
-        "ru": "ужасно",
+        "ru": "ужасный",
         "part_of_speech": "adj",
         "pronunciation": "əˈpɔːlɪŋ",
         "example": "His manners were appalling, it was embarrassing."
@@ -73,7 +73,7 @@ const unit11Advansed = [
         "example": "The boiler was about to explode."
     }, {
         "en": "break down",
-        "ru": "авария",
+        "ru": "ломаться",
         "part_of_speech": "v",
         "pronunciation": "ˈbreɪk daʊn",
         "example": "Our washing machine breaks down every two months."
@@ -103,7 +103,7 @@ const unit11Advansed = [
         "example": "There was a crease on his shirt and it didn't look good."
     }, {
         "en": "crooked",
-        "ru": "Кривой",
+        "ru": "искривленный",
         "part_of_speech": "adj",
         "pronunciation": "ˈkrʊkɪd",
         "example": "He's got a crooked nose."
@@ -133,13 +133,13 @@ const unit11Advansed = [
         "example": "The key to market success is to differentiate your product from the competition."
     }, {
         "en": "disposable income",
-        "ru": "Одноразовый доход",
+        "ru": "доход после расходов",
         "part_of_speech": "n, coll",
         "pronunciation": "dɪˈspəʊzəbl ˈɪnkəm",
         "example": "This ridiculous vacuum cleaner is a monument to excessive disposable income."
     }, {
         "en": "document",
-        "ru": "документ",
+        "ru": "фиксировать, документировать",
         "part_of_speech": "v",
         "pronunciation": "ˈdɒkjument",
         "example": "Use this camera to document your day in images!"
@@ -474,3 +474,4 @@ const unit11Advansed = [
         "pronunciation": "ˈwaɪt ɡʊdz",
         "example": "They are delivering the white goods to our new house tomorrow."
     }]
+
