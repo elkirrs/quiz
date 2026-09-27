@@ -1,4 +1,4 @@
-const unit06UpperIntermediate = [
+const words = [
   {
     en: "ailing",
     ru: "испытывающий трудности, переживающий спад",

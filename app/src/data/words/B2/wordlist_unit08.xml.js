@@ -1,4 +1,4 @@
-const unit08UpperIntermediate = [
+const words = [
   {
     en: "addicted",
     ru: "с зависимостью",

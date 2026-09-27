@@ -1,4 +1,4 @@
-const unit12UpperIntermediate = [
+const words = [
   {
     en: "authority",
     ru: "власть",

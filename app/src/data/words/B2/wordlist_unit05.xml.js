@@ -1,4 +1,4 @@
-const unit05UpperIntermediate = [
+const words = [
   {
     en: "a good talking to",
     ru: "Хороший разговор с",

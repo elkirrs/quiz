@@ -1,4 +1,4 @@
-const unit07UpperIntermediate = [
+const words = [
   {
     en: "ageing",
     ru: "старение",

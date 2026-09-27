@@ -1,4 +1,4 @@
-const unit09UpperIntermediate = [
+const words = [
   {
     en: "absent-minded",
     ru: "рассеянный",
