@@ -50,7 +50,7 @@ export const phraseVerbs = [
   },
   {
     en: "be out",
-    ru: "быть без сознания, не функционировать, появляться",
+    ru: "быть без сознания, не функционировать",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -64,7 +64,7 @@ export const phraseVerbs = [
   },
   {
     en: "be up",
-    ru: "встать, проснуться, происходить",
+    ru: "встать, проснуться",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -225,7 +225,7 @@ export const phraseVerbs = [
   },
   {
     en: "come down",
-    ru: "падать, понижаться, успокаиваться после чего-то хорошего",
+    ru: "падать, понижаться",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -274,7 +274,7 @@ export const phraseVerbs = [
   },
   {
     en: "come over",
-    ru: "заходить, менять мнение, казаться",
+    ru: "заезжать, переезжать, уезжать",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -351,7 +351,7 @@ export const phraseVerbs = [
   },
   {
     en: "get around",
-    ru: "посещать, распространяться, справляться",
+    ru: "навещать, посещать",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -421,7 +421,7 @@ export const phraseVerbs = [
   },
   {
     en: "get on",
-    ru: "преуспевать, ладить, надевать (одежду)",
+    ru: "преуспевать, ладить",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -456,7 +456,7 @@ export const phraseVerbs = [
   },
   {
     en: "go back",
-    ru: "возвращаться, вспоминать, простираться назад",
+    ru: "возвращаться, вспоминать",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -729,7 +729,7 @@ export const phraseVerbs = [
   },
   {
     en: "make for",
-    ru: "направляться к чему-то, кому-то",
+    ru: "направляться к; способствовать, приводить к (результату)",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -848,7 +848,7 @@ export const phraseVerbs = [
   },
   {
     en: "pull up",
-    ru: "останавливать, останавливаться, улучшать",
+    ru: "останавливать, останавливаться",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
@@ -1310,7 +1310,7 @@ export const phraseVerbs = [
   },
   {
     en: "walk in",
-    ru: "входить, заставать в стеснительной ситуации, легко получить работу",
+    ru: "входить, заставать в стеснительной ситуации",
     part_of_speech: "v",
     pronunciation: "",
     example: "",
