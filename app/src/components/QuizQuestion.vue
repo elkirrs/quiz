@@ -15,18 +15,21 @@
 
       <v-card class="study-card mb-4" rounded="lg" elevation="2">
         <v-card-text class="text-center pa-5 pa-sm-7">
-          <div class="text-caption text-medium-emphasis">ENGLISH</div>
-          <div class="study-word text-h5 font-weight-bold mt-2">{{ studyWordEnglish }}</div>
-          <v-divider class="my-4" />
-          <div class="text-caption text-medium-emphasis">TRANSLATION</div>
-          <div class="study-word text-body-1 mt-2">{{ studyWordRussian }}</div>
-          <div class="d-flex justify-center mt-4">
-            <v-btn icon="mdi-volume-high" aria-label="Listen to English"
-              color="teal" variant="text" @click="speakEnglish(studyWords[studyIndex])" />
-            <v-btn :icon="isFavorite(studyWords[studyIndex]) ? 'mdi-star' : 'mdi-star-outline'"
+          <div class="study-heading">
+            <div class="text-caption text-medium-emphasis">ENGLISH</div>
+            <v-btn class="study-favorite"
+              :icon="isFavorite(studyWords[studyIndex]) ? 'mdi-star' : 'mdi-star-outline'"
               :aria-label="isFavorite(studyWords[studyIndex]) ? 'Remove from favorites' : 'Add to favorites'"
               color="teal" variant="text" @click="$emit('toggle-favorite', studyWords[studyIndex])" />
           </div>
+          <div class="study-english mt-2">
+            <div class="study-word text-h5 font-weight-bold">{{ studyWordEnglish }}</div>
+            <v-btn icon="mdi-volume-high" aria-label="Listen to English"
+              color="teal" variant="text" @click="speakEnglish(studyWords[studyIndex])" />
+          </div>
+          <v-divider class="my-4" />
+          <div class="text-caption text-medium-emphasis">TRANSLATION</div>
+          <div class="study-word text-h6 mt-2">{{ studyWordRussian }}</div>
           <v-alert v-if="speechError" class="mt-3" type="warning" variant="tonal" density="comfortable">
             {{ speechError }}
           </v-alert>
@@ -949,7 +952,30 @@ export default {
 }
 
 .study-word {
+  min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.study-heading {
+  position: relative;
+}
+
+.study-favorite {
+  position: absolute;
+  right: -0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.study-english {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.study-english :deep(.v-btn) {
+  flex-shrink: 0;
 }
 
 .progress-card.v-theme--dark {
