@@ -201,6 +201,8 @@ export default {
       dialog: false,
       listWords: [],
       userAnswer: '',
+      answerSubmitted: false,
+      nextWordTimeout: null,
       feedback: '',
       answeredFeedback: '',
       answeredIsView: false,
@@ -305,6 +307,7 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener('keydown', this.handleKey)
+    clearTimeout(this.nextWordTimeout)
   },
   methods: {
     loadWords() {
@@ -349,24 +352,40 @@ export default {
       this.isBtnContinue = isBtnContinue
       this.isBtnResetQuiz = isBtnResetQuiz
     },
-    arraysEqual(a, b) {
-      if (a.length !== b.length) return false;
-      const aCopy = [...a];
-      const bCopy = [...b];
-      for (const word of aCopy) {
-        const index = bCopy.indexOf(word);
-        if (index === -1) return false;
-        bCopy.splice(index, 1);
+    normalizeVerbForms(forms) {
+      return forms.map(form => {
+        const alternatives = [...form.matchAll(/\(([^()]*)\)/g)]
+          .flatMap(([, alternative]) => this.normalize(alternative))
+        const primary = this.normalize(form.replace(/\([^()]*\)/g, ''))
+
+        return [...new Set([...primary, ...alternatives])]
+      })
+    },
+    matchesVerbForms(input, acceptableForms) {
+      if (input.length !== acceptableForms.length) return false
+
+      const matchForms = (formIndex, unmatchedInput) => {
+        if (formIndex === acceptableForms.length) return unmatchedInput.length === 0
+
+        return unmatchedInput.some((word, index) =>
+          acceptableForms[formIndex].includes(word) &&
+          matchForms(formIndex + 1, [
+            ...unmatchedInput.slice(0, index),
+            ...unmatchedInput.slice(index + 1)
+          ])
+        )
       }
 
-      return true;
+      return matchForms(0, input)
     },
     checkAnswer() {
-      if (this.isBtnContinue) {
+      if (this.isBtnContinue || this.answerSubmitted) {
         return
       }
       const input = this.normalize(this.userAnswer)
-      const correct = this.prepareCorrectWord(this.currentWordObj.correctAnswer);
+      const correct = this.settings.quiz === 'verbs'
+        ? this.normalizeVerbForms(this.currentWordObj.correctAnswer)
+        : this.prepareCorrectWord(this.currentWordObj.correctAnswer)
 
       this.answeredIsView = false;
       this.isCorrect = false;
@@ -380,18 +399,10 @@ export default {
         return
       }
 
+      this.answerSubmitted = true
       let isCorrectAnswer = false;
       if (this.settings.quiz === 'verbs') {
-        isCorrectAnswer = this.arraysEqual(input, correct);
-
-        // console.log(input)
-        // console.log(correct)
-        // const inputUnique = [...new Set(input)];
-        // const correctUnique = [...new Set(correct)];
-        //
-        // const isCorrectLength = inputUnique.length === correctUnique.length;
-        // const allWordsMatch = inputUnique.every(word => correctUnique.includes(word));
-        // isCorrectAnswer = isCorrectLength && allWordsMatch
+        isCorrectAnswer = this.matchesVerbForms(input, correct);
       } else {
         isCorrectAnswer = input.every(word => correct.includes(word));
       }
@@ -402,7 +413,8 @@ export default {
         this.typeCorrect = 'success'
         this.feedback = 'Correct!'
 
-        setTimeout(() => {
+        this.nextWordTimeout = setTimeout(() => {
+          this.nextWordTimeout = null
           this.nextWord()
         }, 400)
       } else {
@@ -433,10 +445,13 @@ export default {
       this.checkAnswer()
     },
     nextWord() {
+      clearTimeout(this.nextWordTimeout)
+      this.nextWordTimeout = null
       this.answeredIsView = false;
       this.helper = null
 
       if (this.usedIndexes.size === this.listWords.length) {
+        this.answerSubmitted = true
         this.isCorrect = true
         this.feedback = "You have completed all the words!"
         this.calculateProgress()
@@ -452,6 +467,7 @@ export default {
 
       this.currentIndex = index
       this.usedIndexes.add(index)
+      this.answerSubmitted = false
       this.userAnswer = ''
       this.feedback = ''
       this.isCorrect = false
@@ -473,14 +489,21 @@ export default {
       }
     },
     generateOptions(correctAnswer) {
-      const opts = new Set([this.splitWord(correctAnswer)])
-      while (opts.size < this.countAnswerOptions) {
-        const randomWord = this.direction === 'en-ru'
-          ? this.listWords[Math.floor(Math.random() * this.listWords.length)].ru
-          : this.listWords[Math.floor(Math.random() * this.listWords.length)].en
-        opts.add(this.splitWord(randomWord))
-      }
-      return Array.from(opts).sort(() => Math.random() - 0.5)
+      const answers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
+      const correct = this.splitWord(answers[0] || '')
+      const availableOptions = new Set(
+        this.listWords
+          .map(word => this.direction === 'en-ru' ? word.ru : word.en)
+          .map(answer => this.splitWord(answer))
+          .filter(Boolean)
+      )
+      availableOptions.add(correct)
+
+      const distractors = this.shuffle(
+        [...availableOptions].filter(option => option !== correct)
+      )
+      const optionCount = Math.max(1, this.countAnswerOptions)
+      return this.shuffle([correct, ...distractors.slice(0, optionCount - 1)])
     },
     splitWord(randomWord) {
       const words = randomWord.split(',');
@@ -551,6 +574,8 @@ export default {
       }
     },
     restartQuiz() {
+      clearTimeout(this.nextWordTimeout)
+      this.nextWordTimeout = null
       this.dialog = false
       this.userAnswer = ''
       this.feedback = ''
@@ -561,20 +586,24 @@ export default {
       this.currentIndex = 0
       this.usedIndexes.clear()
       this.answerList = []
+      this.$emit('answer-list', this.answerList)
+      this.resultPercentage = 0
+      this.resultColor = this.resultColors[0]
+      this.endTime = null
+      this.answerSubmitted = false
       this.helper = null
       this.loadWords()
       this.startTime = new Date()
     },
     calculateProgress() {
       const totalWords = this.stats.total;
-      const correctAnswers = this.stats.total - this.stats.incorrect;
-      this.resultPercentage = Math.round((correctAnswers / totalWords) * 100);
-      const index = 0;
-      if (this.resultPercentage > 0) {
-        const index = Math.min(Math.floor(this.resultPercentage / 10), this.resultColors.length - 1);
-      } else {
-        this.resultPercentage = 0
-      }
+      this.resultPercentage = totalWords
+        ? Math.round((this.stats.correct / totalWords) * 100)
+        : 0
+      const index = Math.min(
+        Math.floor(this.resultPercentage / 10),
+        this.resultColors.length - 1
+      )
       this.resultColor = this.resultColors[index];
     },
   }
