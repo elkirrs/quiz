@@ -37,6 +37,7 @@
               v-if="settings"
               :key="'question-' + resetKey"
               :settings="settings"
+              :count-answer-options="settings.countAnswerOptions"
               @answer-list="updateAnswerList"
               :on-reset="confirmReset"
             />
@@ -216,4 +217,3 @@ function confirmReset() {
 }
 
 </script>
-

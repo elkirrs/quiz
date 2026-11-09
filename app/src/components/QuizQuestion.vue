@@ -69,7 +69,8 @@
           <v-col
             v-for="(option, index) in options"
             :key="`${index}-${option}`"
-            cols="6"
+            cols="12"
+            sm="6"
             class="pa-2"
           >
             <v-btn
@@ -80,8 +81,10 @@
               rounded="lg"
               :color="answerSubmitted && selectedOption === option ? (isCorrect ? 'success' : 'error') : 'teal'"
               :aria-disabled="answerSubmitted"
+              :aria-keyshortcuts="index < 10 ? String((index + 1) % 10) : undefined"
               @click="handleMultipleChoice(option)"
             >
+              <span v-if="index < 10" class="option-shortcut" aria-hidden="true">{{ (index + 1) % 10 }}</span>
               <span class="btn-text-wrap">{{ option }}</span>
             </v-btn>
           </v-col>
@@ -99,7 +102,6 @@
           autofocus
           :persistent-hint="persistentHint"
           :hint="hint"
-          @keyup.enter="checkAnswer"
         />
       </div>
 
@@ -124,6 +126,21 @@
         rounded="lg"
       >
         <div v-html="feedback"></div>
+        <v-btn
+          v-if="typeCorrect === 'error'"
+          class="mt-2"
+          size="small"
+          variant="outlined"
+          color="teal"
+          prepend-icon="mdi-volume-high"
+          @click="speakCorrectAnswer"
+        >
+          Listen to English
+        </v-btn>
+      </v-alert>
+
+      <v-alert v-if="speechError" class="mb-4" type="warning" variant="tonal" density="comfortable">
+        {{ speechError }}
       </v-alert>
 
       <v-btn
@@ -199,6 +216,12 @@
         </div>
 
         <v-row class="mt-4" dense>
+          <v-col v-if="mistakenWords.length" cols="12">
+            <v-btn block size="large" color="teal" rounded="lg" @click="reviewMistakes">
+              <v-icon start>mdi-repeat</v-icon>
+              Review mistakes ({{ mistakenWords.length }})
+            </v-btn>
+          </v-col>
           <v-col cols="12" sm="6">
             <v-btn block size="large" color="teal" rounded="lg" @click="restartQuiz">
               <v-icon start>mdi-refresh</v-icon>
@@ -222,6 +245,10 @@
       <v-chip size="small" variant="tonal" color="error">
         <v-icon start size="small">mdi-close-circle-outline</v-icon>
         {{ stats.incorrect }} mistakes
+      </v-chip>
+      <v-chip size="small" variant="tonal">
+        <v-icon start size="small">mdi-counter</v-icon>
+        {{ stats.attempt }} attempts
       </v-chip>
       <v-chip size="small" variant="tonal">
         <v-icon start size="small">mdi-counter</v-icon>
@@ -249,6 +276,10 @@ export default {
       userAnswer: '',
       answerSubmitted: false,
       selectedOption: null,
+      mistakenWords: [],
+      reviewWords: null,
+      optionWords: [],
+      speechError: '',
       nextWordTimeout: null,
       feedback: '',
       answeredFeedback: '',
@@ -369,7 +400,9 @@ export default {
       }
       this.stats = {correct: 0, incorrect: 0, total: 0, remained: 0, attempt: 0}
 
-      if (this.settings.quiz === 'verbs') {
+      if (this.reviewWords) {
+        this.listWords = [...this.reviewWords]
+      } else if (this.settings.quiz === 'verbs') {
         this.settings.verbs.forEach(unitPath => {
           if (allIrregularVerbs?.[unitPath]) {
             this.listWords.push(...allIrregularVerbs[unitPath])
@@ -385,12 +418,15 @@ export default {
         })
       }
 
-      if (this.settings.quiz === 'random') {
+      if (!this.reviewWords && this.settings.quiz === 'random') {
         this.listWords = this.listWords
           .sort(() => Math.random() - 0.5)
           .slice(0, this.settings.amount)
       }
 
+      if (!this.reviewWords) {
+        this.optionWords = [...this.listWords]
+      }
       this.listWords = this.shuffle(this.listWords)
       this.stats.total = this.listWords.length
       this.stats.remained = this.stats.total
@@ -473,6 +509,10 @@ export default {
           this.nextWord()
         }, 400)
       } else {
+        const key = this.wordKey(this.currentWord)
+        if (!this.mistakenWords.some(word => this.wordKey(word) === key)) {
+          this.mistakenWords.push(this.currentWord)
+        }
         if (this.settings?.lastMistake) {
           this.listWords.push(this.currentWord)
         }
@@ -505,6 +545,7 @@ export default {
       this.nextWordTimeout = null
       this.answeredIsView = false;
       this.helper = null
+      this.speechError = ''
 
       if (this.usedIndexes.size === this.listWords.length) {
         this.answerSubmitted = true
@@ -549,7 +590,7 @@ export default {
       const answers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
       const correct = this.splitWord(answers[0] || '')
       const availableOptions = new Set(
-        this.listWords
+        this.optionWords
           .map(word => this.direction === 'en-ru' ? word.ru : word.en)
           .map(answer => this.splitWord(answer))
           .filter(Boolean)
@@ -601,6 +642,9 @@ export default {
         this.stats.remained--;
       } else {
         this.stats.incorrect++;
+        if (!this.settings.lastMistake) {
+          this.stats.remained--;
+        }
       }
       this.stats.attempt++;
 
@@ -642,14 +686,58 @@ export default {
 
       return correctWords;
     },
+    wordKey(word) {
+      return this.settings.quiz === 'verbs'
+        ? JSON.stringify([word.infinitive, word.past, word.past_participle, word.translation])
+        : JSON.stringify([word.en, word.ru, word.part_of_speech])
+    },
+    speakCorrectAnswer() {
+      this.speechError = ''
+      if (typeof window.speechSynthesis?.speak !== 'function' ||
+          typeof window.SpeechSynthesisUtterance !== 'function') {
+        this.speechError = 'Speech playback is not supported in this browser.'
+        return
+      }
+
+      const english = this.settings.quiz === 'verbs'
+        ? [this.currentWord.infinitive, this.currentWord.past, this.currentWord.past_participle].join(', ')
+        : this.currentWord.en
+      const utterance = new window.SpeechSynthesisUtterance(english)
+      utterance.lang = 'en-US'
+      utterance.onerror = () => {
+        this.speechError = 'Unable to play pronunciation. Check your browser and audio settings.'
+      }
+      window.speechSynthesis.speak(utterance)
+    },
     handleKey(event) {
-      if (event.key === 'Enter') {
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey ||
+          event.isComposing || document.querySelector('.v-overlay--active')) return
+
+      const target = event.target
+      const isEditable = target instanceof HTMLElement &&
+        (target.isContentEditable || target.matches('input, textarea, select'))
+      if (this.mode === 'list' && !isEditable && !this.answerSubmitted && /^[0-9]$/.test(event.key)) {
+        const option = this.options[event.key === '0' ? 9 : Number(event.key) - 1]
+        if (option !== undefined) {
+          event.preventDefault()
+          this.handleMultipleChoice(option)
+        }
+      } else if (event.key === 'Enter' &&
+          (!isEditable || (this.mode === 'manual' && target.matches('input'))) &&
+          !(target instanceof HTMLElement && target.closest('button, a, [role="button"]'))) {
         if (this.isBtnContinue) {
+          event.preventDefault()
           this.nextWord();
         } else if (this.isBtnAnswer) {
+          event.preventDefault()
           this.checkAnswer();
         }
       }
+    },
+    reviewMistakes() {
+      if (!this.mistakenWords.length) return
+      this.reviewWords = [...this.mistakenWords]
+      this.restartQuiz()
     },
     restartQuiz() {
       clearTimeout(this.nextWordTimeout)
@@ -665,6 +753,8 @@ export default {
       this.usedIndexes.clear()
       this.answerList = []
       this.$emit('answer-list', this.answerList)
+      this.mistakenWords = []
+      this.speechError = ''
       this.resultPercentage = 0
       this.resultColor = this.resultColors[0]
       this.endTime = null
@@ -701,6 +791,10 @@ export default {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
+.progress-card.v-theme--dark {
+  color: #80cbc4 !important;
+}
+
 .btn-text-wrap {
   white-space: normal !important;
   overflow-wrap: anywhere;
@@ -716,8 +810,36 @@ export default {
 .custom-button {
   height: auto;
   min-height: 64px;
-  padding: 0.75rem !important;
+  padding: 0.75rem 1.75rem !important;
   border-width: 1px;
+}
+
+.option-shortcut {
+  display: none;
+  position: absolute;
+  top: 0.4rem;
+  left: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1;
+  opacity: 0.75;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .option-shortcut {
+    display: block;
+  }
+}
+
+.custom-button.v-theme--dark.text-teal {
+  color: #80cbc4 !important;
+}
+
+.custom-button.v-theme--dark.text-success {
+  color: #a5d6a7 !important;
+}
+
+.custom-button.v-theme--dark.text-error {
+  color: #ff8a80 !important;
 }
 
 .custom-button :deep(.v-btn__content) {

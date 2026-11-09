@@ -182,6 +182,37 @@
       </template>
     </v-select>
 
+    <v-text-field
+      v-if="xs && selectedMod === 'list' && (selectedQuiz === 'words' || selectedQuiz === 'random')"
+      :model-value="mobileAnswerOptions"
+      :density="settings.density"
+      label="Number of answer options"
+      :variant="settings.variant"
+      :color="settings.color"
+      readonly
+    >
+      <template #prepend-inner>
+        <v-btn
+          icon="mdi-minus"
+          size="small"
+          variant="text"
+          aria-label="Decrease answer options"
+          :disabled="mobileAnswerOptions <= 4"
+          @click="mobileAnswerOptions--"
+        />
+      </template>
+      <template #append-inner>
+        <v-btn
+          icon="mdi-plus"
+          size="small"
+          variant="text"
+          aria-label="Increase answer options"
+          :disabled="mobileAnswerOptions >= 10"
+          @click="mobileAnswerOptions++"
+        />
+      </template>
+    </v-text-field>
+
     <div v-if="selectedQuiz === 'random' && sliderShow">
       <div class="text-caption">
         Count words: {{ sliderValue }}
@@ -251,10 +282,15 @@
 import {allWords, mapLevel} from '@/data/words'
 import {allIrregularVerbs, mapUnit as mapVerbUnit} from '@/data/irregular-verbs'
 import {app} from '@/data/const.js'
+import {useDisplay} from 'vuetify'
 
 export default {
   name: 'QuizSettings',
   emits: ['words-selected', 'quiz-settings', 'quiz-type'],
+  setup() {
+    const {xs} = useDisplay()
+    return {xs}
+  },
   data: () => ({
     settings: app.settings,
 
@@ -269,6 +305,7 @@ export default {
     selectedQuiz: app.settings.default.quiz,
     selectedTrans: app.settings.default.trans,
     selectedMod: app.settings.default.mod,
+    mobileAnswerOptions: 4,
 
     sliderValue: 50,
     sliderMaxValue: 100,
@@ -356,8 +393,9 @@ export default {
         return;
       }
 
-      if (this.selectedMod === 'list' && this.countWords < 10) {
-        showError('There must be more than 10 words.');
+      const countAnswerOptions = this.xs ? this.mobileAnswerOptions : 10
+      if (this.selectedMod === 'list' && this.countWords < countAnswerOptions) {
+        showError(`There must be at least ${countAnswerOptions} words.`);
         return;
       }
 
@@ -369,7 +407,8 @@ export default {
         units: this.units,
         verbs: this.verbs,
         lastMistake: this.checkbox,
-        amount: this.sliderValue
+        amount: this.sliderValue,
+        countAnswerOptions
       });
     },
     decrement() {
@@ -501,6 +540,4 @@ export default {
   }
 }
 </script>
-
-
 
