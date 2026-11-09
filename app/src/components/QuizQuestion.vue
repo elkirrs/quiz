@@ -65,7 +65,7 @@
       </div>
 
       <div v-if="mode === 'list'" class="d-flex flex-column gap-2 mb-6">
-        <v-row align="center" justify="center" no-gutters>
+        <v-row align="stretch" justify="center" no-gutters>
           <v-col
             v-for="(option, index) in options"
             :key="`${index}-${option}`"
@@ -74,9 +74,12 @@
           >
             <v-btn
               class="custom-button text-lowercase pa-2"
+              :class="{ 'answer-submitted': answerSubmitted }"
               variant="outlined"
               block
-              color="teal"
+              rounded="lg"
+              :color="answerSubmitted && selectedOption === option ? (isCorrect ? 'success' : 'error') : 'teal'"
+              :aria-disabled="answerSubmitted"
               @click="handleMultipleChoice(option)"
             >
               <span class="btn-text-wrap">{{ option }}</span>
@@ -245,6 +248,7 @@ export default {
       listWords: [],
       userAnswer: '',
       answerSubmitted: false,
+      selectedOption: null,
       nextWordTimeout: null,
       feedback: '',
       answeredFeedback: '',
@@ -488,10 +492,11 @@ export default {
 
     },
     handleMultipleChoice(option) {
-      if (this.isBtnContinue) {
+      if (this.isBtnContinue || this.answerSubmitted) {
         return
       }
 
+      this.selectedOption = option
       this.userAnswer = option
       this.checkAnswer()
     },
@@ -519,6 +524,7 @@ export default {
       this.currentIndex = index
       this.usedIndexes.add(index)
       this.answerSubmitted = false
+      this.selectedOption = null
       this.userAnswer = ''
       this.feedback = ''
       this.isCorrect = false
@@ -663,6 +669,7 @@ export default {
       this.resultColor = this.resultColors[0]
       this.endTime = null
       this.answerSubmitted = false
+      this.selectedOption = null
       this.helper = null
       this.loadWords()
       this.startTime = new Date()
@@ -696,17 +703,36 @@ export default {
 
 .btn-text-wrap {
   white-space: normal !important;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   display: block;
   width: 100%;
   text-align: center;
   font-weight: 500;
-  color: #2b2d42;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: rgb(var(--v-theme-on-surface));
 }
 
 .custom-button {
-  height: 64px;
-  min-height: 48px;
+  height: auto;
+  min-height: 64px;
+  padding: 0.75rem !important;
+  border-width: 1px;
+}
+
+.custom-button :deep(.v-btn__content) {
+  white-space: normal;
+  width: 100%;
+}
+
+.custom-button:not(.answer-submitted):hover,
+.custom-button:not(.answer-submitted):active {
+  background-color: rgba(0, 150, 136, 0.08);
+}
+
+.custom-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .quiz-action {
