@@ -1,6 +1,5 @@
 <template>
-  <v-responsive class="border rounded-lg">
-    <v-app :theme="theme">
+  <v-app :theme="theme">
       <v-app-bar class="px-3">
         <v-img
           :src="theme === 'light' ? logoLight : logoDark"
@@ -191,8 +190,7 @@
           </v-speed-dial>
         </v-fab>
       </div>
-    </v-app>
-  </v-responsive>
+  </v-app>
 </template>
 
 <script setup>
@@ -346,3 +344,10 @@ function confirmReset() {
 }
 
 </script>
+
+<style scoped>
+:deep(.v-fab--app .v-fab__container) {
+  margin-right: calc(12px + env(safe-area-inset-right, 0px));
+  margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+</style>
