@@ -8,11 +8,13 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ModalVerbDetails: typeof import('./src/components/ModalVerbDetails.vue')['default']
     ModalVerbs: typeof import('./src/components/ModalVerbs.vue')['default']
     QuizQuestion: typeof import('./src/components/QuizQuestion.vue')['default']
     QuizResult: typeof import('./src/components/QuizResult.vue')['default']
     QuizSettings: typeof import('./src/components/QuizSettings.vue')['default']
     QuizTable: typeof import('./src/components/QuizTable.vue')['default']
+    ReferenceControls: typeof import('./src/components/ReferenceControls.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Rule: typeof import('./src/components/Rule.vue')['default']

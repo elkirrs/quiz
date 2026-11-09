@@ -1,21 +1,6 @@
 <template>
   <div class="tense-details">
-    <div class="detail-controls" role="group" :aria-label="$t('Tense details')">
-      <v-tooltip v-for="option in options" :key="option.value" :text="$t(option.label)" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            :icon="option.icon"
-            :variant="tab === option.value ? 'tonal' : 'text'"
-            color="teal"
-            :aria-label="$t(option.label)"
-            :aria-pressed="tab === option.value"
-            size="small"
-            @click="tab = option.value"
-          />
-        </template>
-      </v-tooltip>
-    </div>
+    <ReferenceControls v-model="tab" :label="$t('Tense details')" :options="options" />
     <div class="detail-heading text-caption text-medium-emphasis">{{ $t(activeLabel) }}</div>
 
     <v-window v-model="tab">
@@ -57,6 +42,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import ReferenceControls from './ReferenceControls.vue'
 import { locale } from '@/i18n'
 import { forms } from '@/data/tenseReference.js'
 
@@ -75,10 +61,6 @@ const activeLabel = computed(() => options.find(option => option.value === tab.v
 
 <style scoped>
 .tense-details { min-width: 0; }
-.detail-controls { display: flex; gap: 4px; padding: 0 12px; }
-.detail-controls .v-btn { flex: 1; min-width: 0; height: 40px; }
-.detail-controls :deep(.v-theme--dark.v-btn) { color: #4db6ac !important; }
-.detail-controls :deep(.v-theme--dark.v-btn span) { color: inherit; }
 .detail-heading { padding: 8px 16px 0; }
 .tense-details :deep(.v-window-item) { padding: 8px 16px 16px; }
 .tense-entry + .tense-entry { margin-top: 12px; }

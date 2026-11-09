@@ -102,7 +102,7 @@ const groups = computed(() => aspects.map(aspect => {
 
 function handleHotkey(event) {
   const target = event.target
-  if (event.ctrlKey && event.key === 'f' && !target.isContentEditable &&
+  if (event.ctrlKey && !event.shiftKey && event.key === 'f' && !target.isContentEditable &&
       !['INPUT', 'TEXTAREA'].includes(target.tagName)) {
     dialogModel.value = !dialogModel.value
   }
