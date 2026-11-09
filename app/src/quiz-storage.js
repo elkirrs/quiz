@@ -1,6 +1,7 @@
 export const STORAGE_KEY = 'word-quiz-learning-v1'
 
 export function wordKey(word, quiz) {
+  if (quiz === 'sentences') return JSON.stringify(['sentences', word.en, word.ru])
   return quiz === 'verbs'
     ? JSON.stringify(['verbs', word.infinitive, word.past, word.past_participle, word.translation])
     : JSON.stringify(['words', word.en, word.ru, word.part_of_speech])

@@ -1,6 +1,15 @@
+import {exampleTranslations} from '@/data/example-translations'
+
 function normalizeText(text) {
   return text.toLowerCase().replace(/[’`]/g, "'")
     .replace(/[^\p{L}\p{N}']+/gu, ' ').replace(/\s+/g, ' ').trim()
+}
+
+export function translatedExample(word) {
+  if (typeof word.example !== 'string' || !word.example.trim()) return null
+  const text = new DOMParser().parseFromString(word.example, 'text/html').body.textContent.trim().replace(/\s+/g, ' ')
+  const translation = exampleTranslations[text]
+  return translation && text.split(/\s+/).length > 1 ? {en: text, ru: translation} : null
 }
 
 export function gapExample(word) {

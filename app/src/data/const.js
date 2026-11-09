@@ -17,6 +17,7 @@ export const app = {
       {name: 'Words', code: 'words'},
       {name: 'Irregular verbs', code: 'verbs'},
       {name: 'Random', code: 'random'},
+      {name: 'Sentence practice', code: 'sentences'},
     ],
     itemsTrans: [
       {name: 'Russian to English', code: 'ru-en'},
@@ -27,6 +28,7 @@ export const app = {
       {name: 'Selection from the list', code: 'list'},
       {name: 'Missing word', code: 'gap'},
       {name: 'Match pairs', code: 'pairs'},
+      {name: 'Build a sentence', code: 'sentence'},
     ],
   },
 

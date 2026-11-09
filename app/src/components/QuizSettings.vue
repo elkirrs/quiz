@@ -23,7 +23,7 @@
     </v-select>
 
     <v-select
-      v-if="selectedQuiz === 'words' || selectedQuiz === 'random' "
+      v-if="selectedQuiz === 'words' || selectedQuiz === 'random' || selectedQuiz === 'sentences'"
       clearable
       v-model="levels"
       :items="itemsLevel"
@@ -62,7 +62,7 @@
 
 
     <v-select
-      v-if="selectedQuiz === 'words' || selectedQuiz === 'random'"
+      v-if="selectedQuiz === 'words' || selectedQuiz === 'random' || selectedQuiz === 'sentences'"
       clearable
       v-model="units"
       :items="itemsUnit"
@@ -235,7 +235,7 @@
     </v-text-field>
 
     <v-select
-      v-if="filterOptions.length > 1"
+      v-if="selectedQuiz !== 'sentences' && filterOptions.length > 1"
       v-model="wordFilter"
       :items="filterOptions"
       item-title="title"
@@ -294,10 +294,10 @@
 
     <v-switch v-if="selectedQuiz === 'verbs'" v-model="separateVerbForms"
       :label="$t('Separate fields for verb forms')" :color="settings.color" density="compact" hide-details />
-    <v-switch v-model="studyFirst" :label="$t('Study cards before the quiz')" :color="settings.color" density="compact" hide-details />
-    <v-switch v-model="spacedReview" :label="$t('Spaced review')"
+    <v-switch v-if="selectedQuiz !== 'sentences'" v-model="studyFirst" :label="$t('Study cards before the quiz')" :color="settings.color" density="compact" hide-details />
+    <v-switch v-if="selectedQuiz !== 'sentences'" v-model="spacedReview" :label="$t('Spaced review')"
       :color="settings.color" density="compact" hide-details />
-    <v-switch v-if="selectedQuiz === 'verbs' || selectedMod !== 'pairs'" v-model="checkbox"
+    <v-switch v-if="selectedQuiz === 'verbs' || selectedMod !== 'pairs'" v-model="lastMistakeEnabled"
       :label="$t('Until the last mistake')" :color="settings.color" density="compact" hide-details />
     <v-alert v-if="selectedQuiz !== 'verbs' && selectedMod === 'pairs'" class="mt-3"
       type="info" variant="tonal" density="comfortable">
@@ -307,6 +307,11 @@
     <v-alert v-if="selectedQuiz !== 'verbs' && selectedMod === 'gap' && eligibleWords.length"
       class="mt-3" type="info" variant="tonal" density="comfortable">
       {{ $t('Words excluded because no suitable example was found') }}: {{ excludedGapCount }}
+    </v-alert>
+    <v-alert v-if="selectedQuiz === 'sentences' && eligibleWords.length"
+      class="mt-3" type="info" variant="tonal" density="comfortable">
+      {{ $t('Translated examples available') }}: {{ sentencePool.length }}.
+      {{ $t('Words without a translated example') }}: {{ excludedSentenceCount }}.
     </v-alert>
 
     <v-snackbar
@@ -338,7 +343,7 @@ import {app} from '@/data/const.js'
 import {useDisplay} from 'vuetify'
 import {wordKey} from '@/quiz-storage'
 import {isReviewDue} from '@/review-schedule'
-import {gapExample, pairTokens} from '@/quiz-modes'
+import {gapExample, pairTokens, translatedExample} from '@/quiz-modes'
 import {translate as t} from '@/i18n'
 
 export default {
@@ -363,6 +368,7 @@ export default {
     },
 
     checkbox: true,
+    sentenceLastMistake: false,
 
     selectedQuiz: app.settings.default.quiz,
     selectedTrans: app.settings.default.trans,
@@ -390,6 +396,18 @@ export default {
     this.loadAllWords()
   },
   computed: {
+    lastMistakeEnabled: {
+      get() {
+        return this.selectedQuiz === 'sentences' ? this.sentenceLastMistake : this.checkbox
+      },
+      set(value) {
+        if (this.selectedQuiz === 'sentences') {
+          this.sentenceLastMistake = value
+        } else {
+          this.checkbox = value
+        }
+      },
+    },
     itemsQuiz() {
       return app.settings.itemsQuiz.map(item => ({...item, name: t(item.name)}))
     },
@@ -397,10 +415,13 @@ export default {
       return app.settings.itemsTrans.map(item => ({...item, name: t(item.name)}))
     },
     itemsMods() {
-      return app.settings.itemsMods.map(item => ({...item, name: t(item.name)}))
+      return app.settings.itemsMods
+        .filter(item => item.code !== 'sentence')
+        .map(item => ({...item, name: t(item.name)}))
     },
     eligibleWords() {
       return this.getSelectedWords().filter(word => {
+        if (this.selectedQuiz === 'sentences') return true
         const key = wordKey(word, this.selectedQuiz)
         const matches = this.wordFilter === 'all' ||
           (this.wordFilter === 'favorites' && this.favorites[key]) ||
@@ -410,6 +431,17 @@ export default {
     },
     excludedGapCount() {
       return this.eligibleWords.filter(word => !gapExample(word)).length
+    },
+    sentencePool() {
+      const unique = new Map()
+      for (const word of this.eligibleWords) {
+        const sentence = translatedExample(word)
+        if (sentence) unique.set(sentence.en, sentence)
+      }
+      return [...unique.values()]
+    },
+    excludedSentenceCount() {
+      return this.eligibleWords.filter(word => !translatedExample(word)).length
     },
     itemsLevel() {
       return Object.keys(mapLevel).map(code => ({name: t(mapLevel[code]), code}))
@@ -469,7 +501,7 @@ export default {
       }
 
       const needsUnits = this.wordFilter === 'all' || this.levels.length > 0
-      if (this.selectedQuiz === 'words' && (!this.selectedTrans || !this.selectedMod || (needsUnits && (this.levels.length === 0 || this.units.length === 0)))) {
+      if (['words', 'sentences'].includes(this.selectedQuiz) && (!this.selectedTrans || !this.selectedMod || (needsUnits && (this.levels.length === 0 || this.units.length === 0)))) {
         showError('All quiz settings are required');
         return;
       }
@@ -485,13 +517,13 @@ export default {
         return
       }
       const specialMode = this.selectedQuiz !== 'verbs' && ['gap', 'pairs'].includes(this.selectedMod)
-      const pool = !specialMode ? null : filteredWords.filter(word =>
+      const pool = this.selectedQuiz === 'sentences' ? this.sentencePool : !specialMode ? null : filteredWords.filter(word =>
         this.selectedMod === 'gap' ? gapExample(word) :
           typeof word.en === 'string' && typeof word.ru === 'string' &&
           pairTokens(word.en).length && pairTokens(word.ru).length
       )
-      if (specialMode && !pool.length) {
-        showError(this.selectedMod === 'gap' ? 'No suitable examples found.' : 'No suitable pairs found.')
+      if ((specialMode || this.selectedQuiz === 'sentences') && !pool.length) {
+        showError(this.selectedQuiz === 'sentences' ? 'No translated examples found.' : this.selectedMod === 'gap' ? 'No suitable examples found.' : 'No suitable pairs found.')
         return
       }
       const countAnswerOptions = this.xs ? this.mobileAnswerOptions : 10
@@ -502,13 +534,13 @@ export default {
         levels: this.levels,
         units: this.units,
         verbs: this.verbs,
-        lastMistake: this.checkbox,
+        lastMistake: this.lastMistakeEnabled,
         amount: this.sliderValue,
         countAnswerOptions,
         pairCount: this.xs ? this.mobilePairCount : 6,
-        wordFilter: this.wordFilter,
-        studyFirst: this.studyFirst,
-        spacedReview: this.spacedReview,
+        wordFilter: this.selectedQuiz === 'sentences' ? 'all' : this.wordFilter,
+        studyFirst: this.selectedQuiz === 'sentences' ? false : this.studyFirst,
+        spacedReview: this.selectedQuiz === 'sentences' ? false : this.spacedReview,
         separateVerbForms: this.selectedQuiz === 'verbs' && this.separateVerbForms,
         selectedPool: pool
       });
@@ -643,7 +675,9 @@ export default {
         this.levels = []
         this.verbs = []
 
-        if (newQuiz === 'verbs') {
+        if (newQuiz === 'sentences') {
+          this.selectedMod = 'sentence'
+        } else if (newQuiz === 'verbs' || ['sentence', 'verb-form'].includes(this.selectedMod)) {
           this.selectedMod = 'manual'
         }
 

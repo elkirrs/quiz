@@ -69,6 +69,18 @@ are placed in separate rounds, so the final round may contain fewer pairs.
 Every pair must be matched before the next round starts automatically. Attempts
 and review schedules are saved.
 
+Choose **Sentence practice** and select vocabulary units to build sentences
+from their examples. Each new practice shuffles the sentences; resuming a saved
+practice preserves its order. Select words in order and tap a selected word to remove it.
+**Until the last mistake** is off by default for sentence practice and can be enabled.
+Only examples with a complete Russian translation are included. Translations
+are currently available for examples in Beginner Units 01–14, Elementary Units 01–12,
+Pre Intermediate Units 01–12, Intermediate Units 01–12, Upper Intermediate Units 01–12,
+Advanced Units 01–12, and some examples in the additional vocabulary sections;
+settings show available examples and words excluded. The mode saves unfinished
+progress, records attempts and supports reviewing mistakes without updating
+vocabulary review schedules.
+
 Favorites, mistake counts, review schedules, completed quiz history, and unfinished quiz progress
 are stored locally in the browser. After reopening the app, choose whether to
 continue an unfinished quiz or start over. These data are not synchronized

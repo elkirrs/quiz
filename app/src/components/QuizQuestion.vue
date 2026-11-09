@@ -97,7 +97,7 @@
         <v-card-text class="text-center pa-3 pa-sm-4">
           <div class="question-heading">
             <div class="text-body-1 text-medium-emphasis">
-              {{ $t(mode === 'gap' ? 'Fill in the missing word' : mode === 'pairs' ? 'Match the pairs' : 'How is the word translated?') }}
+              {{ $t(mode === 'sentence' ? 'Build the sentence' : mode === 'verb-form' ? 'Choose the correct verb form' : mode === 'gap' ? 'Fill in the missing word' : mode === 'pairs' ? 'Match the pairs' : 'How is the word translated?') }}
             </div>
             <div class="question-actions">
               <v-btn
@@ -110,7 +110,7 @@
                 @click="dialog = true"
               />
               <v-btn
-                v-if="mode !== 'pairs'"
+                v-if="mode !== 'pairs' && settings.quiz !== 'sentences'"
                 :icon="isFavorite(currentWord) ? 'mdi-star' : 'mdi-star-outline'"
                 :aria-label="$t(isFavorite(currentWord) ? 'Remove from favorites' : 'Add to favorites')"
                 color="teal"
@@ -159,7 +159,26 @@
         </div>
       </div>
 
-      <div v-if="mode === 'list'" class="d-flex flex-column gap-2 mb-6">
+      <div v-if="mode === 'sentence'" class="mb-4">
+        <div class="text-body-2 text-medium-emphasis mb-2">{{ $t('Your sentence') }}</div>
+        <div class="sentence-tiles sentence-answer mb-3">
+          <span v-if="!sentenceSelected.length" class="text-body-2 text-medium-emphasis">
+            {{ $t('Select words in order') }}
+          </span>
+          <v-btn v-for="index in sentenceSelected" :key="index" color="teal" variant="tonal"
+            :disabled="answerSubmitted" :aria-label="`${$t('Remove word')}: ${sentenceWords[index]}`"
+            @click="removeSentenceWord(index)">{{ sentenceWords[index] }}</v-btn>
+        </div>
+        <div class="text-body-2 text-medium-emphasis mb-2">{{ $t('Available words') }}</div>
+        <div class="sentence-tiles">
+          <v-btn v-for="index in sentenceOrder" :key="index" color="teal" variant="outlined"
+            :disabled="sentenceSelected.includes(index) || answerSubmitted"
+            :aria-label="`${$t('Add word')}: ${sentenceWords[index]}`"
+            @click="addSentenceWord(index)">{{ sentenceWords[index] }}</v-btn>
+        </div>
+      </div>
+
+      <div v-if="mode === 'list' || mode === 'verb-form'" class="d-flex flex-column gap-2 mb-6">
         <v-row align="stretch" justify="center" no-gutters>
           <v-col
             v-for="(option, index) in options"
@@ -261,8 +280,9 @@
         color="teal"
         rounded="lg"
         class="quiz-action"
-        :disabled="(mode === 'manual' || mode === 'gap') && (separateVerbForms
-          ? !verbPast.trim() || !verbParticiple.trim() : !(userAnswer || '').trim())"
+        :disabled="mode === 'sentence' ? sentenceSelected.length !== sentenceWords.length || answerSubmitted
+          : (mode === 'manual' || mode === 'gap') && (separateVerbForms
+            ? !verbPast.trim() || !verbParticiple.trim() : !(userAnswer || '').trim())"
         @click="checkAnswer"
       >
         {{ $t('Check answer') }}
@@ -403,6 +423,9 @@ export default {
       selectedOption: null,
       mistakenWords: [],
       reviewedKeys: [],
+      sentenceWords: [],
+      sentenceOrder: [],
+      sentenceSelected: [],
       pairRound: [],
       pairTranslations: [],
       pairSelected: null,
@@ -494,6 +517,12 @@ export default {
     currentWordObj() {
       if (!this.currentWord) return {}
 
+      if (this.mode === 'sentence') {
+        return {question: this.currentWord.ru, correctAnswer: this.currentWord.en}
+      }
+      if (this.mode === 'verb-form') {
+        return {question: this.currentWord.formQuestion, correctAnswer: this.currentWord.formAnswer}
+      }
       if (this.mode === 'gap') {
         const gap = gapExample(this.currentWord)
         return {question: gap.question, correctAnswer: gap.answers, part_of_speech: this.currentWord.part_of_speech}
@@ -568,7 +597,7 @@ export default {
 
       if (this.reviewWords) {
         this.listWords = [...this.reviewWords]
-      } else if (this.settings.selectedPool && ['gap', 'pairs'].includes(this.mode)) {
+      } else if (this.settings.selectedPool && ['gap', 'pairs', 'sentence', 'verb-form'].includes(this.mode)) {
         this.listWords = [...this.settings.selectedPool]
       } else if (this.settings.quiz === 'verbs') {
         const units = this.settings.verbs.length ? this.settings.verbs
@@ -593,9 +622,9 @@ export default {
       }
 
       if (!this.reviewWords) {
-        this.optionWords = ['gap', 'pairs'].includes(this.mode) ? [] : [...this.listWords]
+        this.optionWords = ['gap', 'pairs', 'sentence', 'verb-form'].includes(this.mode) ? [] : [...this.listWords]
         const filter = this.settings.wordFilter || 'all'
-        if ((filter !== 'all' || this.settings.spacedReview || ['gap', 'pairs'].includes(this.mode)) && this.initialWords) {
+        if ((filter !== 'all' || this.settings.spacedReview || ['gap', 'pairs', 'sentence', 'verb-form'].includes(this.mode)) && this.initialWords) {
           this.listWords = [...this.initialWords]
         } else {
           this.listWords = this.listWords.filter(word => {
@@ -614,7 +643,9 @@ export default {
         }
         if ((filter !== 'all' || this.settings.spacedReview || this.settings.selectedPool) && !this.initialWords) this.initialWords = [...this.listWords]
       }
-      this.listWords = this.shuffle(this.listWords)
+      this.listWords = this.mode === 'sentence'
+        ? this.shuffleSentences(this.listWords)
+        : this.shuffle(this.listWords)
       this.stats.total = this.listWords.length
       this.stats.remained = this.stats.total
       if (!this.reviewWords && this.settings.studyFirst) {
@@ -643,6 +674,7 @@ export default {
       const keys = ['studying', 'studyIndex', 'studyWords', 'listWords', 'userAnswer', 'verbPast', 'verbParticiple',
         'answerSubmitted', 'selectedOption', 'mistakenWords', 'reviewedKeys', 'reviewWords', 'initialWords', 'optionWords',
         'pairRound', 'pairTranslations', 'pairSelected',
+        'sentenceWords', 'sentenceOrder', 'sentenceSelected',
         'feedback', 'answeredFeedback', 'answeredIsView', 'helper', 'isCorrect',
         'isBtnContinue', 'isBtnAnswer', 'isBtnResetQuiz', 'typeCorrect', 'currentIndex',
         'options', 'answerList', 'question', 'stats', 'resultPercentage', 'resultColor']
@@ -677,10 +709,32 @@ export default {
     shuffle(array) {
       return array.slice().sort(() => Math.random() - 0.5)
     },
+    shuffleSentences(sentences) {
+      const shuffled = sentences.slice()
+      for (let index = shuffled.length - 1; index > 0; index--) {
+        const other = Math.floor(Math.random() * (index + 1))
+        const sentence = shuffled[index]
+        shuffled[index] = shuffled[other]
+        shuffled[other] = sentence
+      }
+      return shuffled
+    },
     handlerButton(isBtnAnswer, isBtnContinue, isBtnResetQuiz) {
       this.isBtnAnswer = isBtnAnswer
       this.isBtnContinue = isBtnContinue
       this.isBtnResetQuiz = isBtnResetQuiz
+    },
+    addSentenceWord(index) {
+      if (this.answerSubmitted || this.sentenceSelected.includes(index)) return
+      this.sentenceSelected.push(index)
+      this.userAnswer = this.sentenceSelected.map(item => this.sentenceWords[item]).join(' ')
+      this.saveState()
+    },
+    removeSentenceWord(index) {
+      if (this.answerSubmitted) return
+      this.sentenceSelected = this.sentenceSelected.filter(item => item !== index)
+      this.userAnswer = this.sentenceSelected.map(item => this.sentenceWords[item]).join(' ')
+      this.saveState()
     },
     startPairRound() {
       this.pairRound = []
@@ -785,6 +839,7 @@ export default {
       const input = this.separateVerbForms
         ? [this.normalize(this.verbPast), this.normalize(this.verbParticiple)]
         : this.normalize(this.userAnswer || '', ignoreParenthetical)
+      const submittedAnswer = this.userAnswer
       const correct = this.settings.quiz === 'verbs'
         ? this.normalizeVerbForms(this.currentWordObj.correctAnswer)
         : this.mode === 'gap'
@@ -796,7 +851,8 @@ export default {
       this.typeCorrect = 'error'
       this.feedback = `${t('Incorrect. Correct:')} <strong>${this.currentWordObj.correctAnswer}</strong>`;
 
-      if (input.length === 0 || (this.separateVerbForms && input.some(form => form.length !== 1))) {
+      if (input.length === 0 || (this.mode === 'sentence' && this.sentenceSelected.length !== this.sentenceWords.length) ||
+          (this.separateVerbForms && input.some(form => form.length !== 1))) {
         this.typeCorrect = 'warning'
         this.feedback = t('Enter the answer in the field')
         this.handlerButton(true, false, false)
@@ -805,7 +861,9 @@ export default {
 
       this.answerSubmitted = true
       let isCorrectAnswer = false;
-      if (this.separateVerbForms) {
+      if (this.mode === 'sentence') {
+        isCorrectAnswer = this.userAnswer.trim().toLowerCase() === this.currentWord.en.toLowerCase()
+      } else if (this.separateVerbForms) {
         isCorrectAnswer = input.every((form, index) => correct[index].includes(form[0]))
       } else if (this.settings.quiz === 'verbs') {
         isCorrectAnswer = this.matchesVerbForms(input, correct);
@@ -850,7 +908,7 @@ export default {
       }
 
       this.answerList.unshift({
-        input: this.separateVerbForms ? input.map(form => form[0]) : input,
+        input: this.mode === 'sentence' ? submittedAnswer : this.separateVerbForms ? input.map(form => form[0]) : input,
         answer: this.currentWordObj,
         isCorrect: this.isCorrect
       })
@@ -899,9 +957,13 @@ export default {
       }
 
       let index
-      do {
-        index = Math.floor(Math.random() * this.listWords.length)
-      } while (this.usedIndexes.has(index))
+      if (this.mode === 'sentence') {
+        index = this.listWords.findIndex((_, position) => !this.usedIndexes.has(position))
+      } else {
+        do {
+          index = Math.floor(Math.random() * this.listWords.length)
+        } while (this.usedIndexes.has(index))
+      }
 
       this.currentIndex = index
       this.usedIndexes.add(index)
@@ -916,18 +978,26 @@ export default {
       this.handlerButton(true, false, false)
 
       const current = this.currentWordObj
-      this.question = this.mode === 'gap' ? current.question : this.separateVerbForms
+      this.question = ['gap', 'sentence', 'verb-form'].includes(this.mode) ? current.question : this.separateVerbForms
         ? `${this.currentWord.infinitive} — ${this.splitWord(this.currentWord.translation)}`
         : this.splitWord(current.question)
 
-      if (this.mode === 'list') {
-        this.options = this.generateOptions(current.correctAnswer)
+      if (this.mode === 'sentence') {
+        this.sentenceWords = this.currentWord.en.split(/\s+/)
+        this.sentenceOrder = this.shuffle(this.sentenceWords.map((_, index) => index))
+        if (this.sentenceOrder.every((index, position) => index === position)) {
+          this.sentenceOrder.push(this.sentenceOrder.shift())
+        }
+        this.sentenceSelected = []
+      } else if (this.mode === 'list' || this.mode === 'verb-form') {
+        this.options = this.mode === 'verb-form'
+          ? this.shuffle(this.currentWord.formOptions) : this.generateOptions(current.correctAnswer)
         this.handlerButton(false, false, false)
       }
 
       if (this.settings.quiz === 'verbs') {
         this.helper =  t('Verb:') + ' <strong>' + this.currentWord?.infinitive + '</strong>';
-      } else if (this.mode !== 'gap') {
+      } else if (!['gap', 'sentence', 'verb-form'].includes(this.mode)) {
         this.helper = this.currentWord?.example || null;
       }
       this.saveState()
@@ -1066,7 +1136,7 @@ export default {
       const target = event.target
       const isEditable = target instanceof HTMLElement &&
         (target.isContentEditable || target.matches('input, textarea, select'))
-      if (this.mode === 'list' && !isEditable && !this.answerSubmitted && /^[0-9]$/.test(event.key)) {
+      if (['list', 'verb-form'].includes(this.mode) && !isEditable && !this.answerSubmitted && /^[0-9]$/.test(event.key)) {
         const option = this.options[event.key === '0' ? 9 : Number(event.key) - 1]
         if (option !== undefined) {
           event.preventDefault()
@@ -1142,6 +1212,25 @@ export default {
 .pair-button.pair-selected {
   border-width: 2px;
   box-shadow: inset 0 0 0 999px rgba(0, 150, 136, 0.16);
+}
+.sentence-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sentence-tiles .v-btn {
+  max-width: 100%;
+  height: auto;
+  min-height: 44px;
+  padding: 8px 12px;
+  text-transform: none;
+}
+.sentence-answer {
+  min-height: 60px;
+  padding: 8px;
+  align-items: center;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
 }
 .quiz-layout {
   padding: clamp(0.75rem, 3vw, 1.5rem) 0 6rem;
