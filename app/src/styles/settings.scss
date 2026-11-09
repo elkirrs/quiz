@@ -5,6 +5,7 @@
  */
 
 @use 'vuetify/settings' with (
+  $body-font-family: ('Inter Variable', sans-serif),
   $border-radius-root: 8px,
   $rounded: ('lg': 8px)
 );

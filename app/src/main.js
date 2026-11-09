@@ -15,7 +15,7 @@ import { createApp } from 'vue'
 import { locale, translate, localizeMessage, LANGUAGE_STORAGE_KEY } from '@/i18n'
 
 // Styles
-import 'unfonts.css'
+import '@fontsource-variable/inter'
 
 const app = createApp(App)
 let languageStorageError = ''
