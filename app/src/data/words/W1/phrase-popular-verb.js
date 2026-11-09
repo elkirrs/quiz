@@ -113,7 +113,7 @@ export const phrasePopularVerb = [
   },
   {
     en: "bring up",
-    ru: "вскармливать, воспитывать; поднимать (вопрос); заводить (разговор)",
+    ru: "вскармливать, воспитывать, поднимать (вопрос), заводить (разговор)",
     part_of_speech: "v",
     pronunciation: "",
     example: "She brought up an important point at the meeting.",
@@ -134,7 +134,7 @@ export const phrasePopularVerb = [
   },
   {
     en: "bring forward",
-    ru: "переносить на более ранний срок, выдвигать (идею, предложение)",
+    ru: "переносить на более ранний срок, выдвигать (идею / предложение)",
     part_of_speech: "v",
     pronunciation: "",
     example: "The meeting was brought forward to Monday.",
@@ -169,7 +169,7 @@ export const phrasePopularVerb = [
   },
   {
     en: "call back",
-    ru: "перезвонить; позвать назад",
+    ru: "перезвонить, позвать назад",
     part_of_speech: "v",
     pronunciation: "",
     example: "I'll call you back after lunch.",
@@ -868,7 +868,7 @@ export const phrasePopularVerb = [
     ru: "подождать у телефона, держаться",
     part_of_speech: "v",
     pronunciation: "",
-    example: "Hold on a moment; I'll be right there.",
+    example: "Hold on a moment. I'll be right there.",
   },
   {
     en: "hold up",
@@ -1194,7 +1194,7 @@ export const phrasePopularVerb = [
     ru: "надевать, включать",
     part_of_speech: "v",
     pronunciation: "",
-    example: "Put on your jacket; it's cold outside.",
+    example: "Put on your jacket. it's cold outside.",
   },
   {
     en: "put out",
@@ -1270,7 +1270,7 @@ export const phrasePopularVerb = [
 
   {
     en: "set off",
-    ru: "отправляться (в путь); вызывать (действие)",
+    ru: "отправляться (в путь), вызывать (действие)",
     part_of_speech: "v",
     pronunciation: "",
     example: "We set off early to avoid traffic.",
@@ -1339,7 +1339,7 @@ export const phrasePopularVerb = [
     ru: "говорить громче, высказываться",
     part_of_speech: "v",
     pronunciation: "",
-    example: "Please speak up; I can't hear you.",
+    example: "Please speak up. I can't hear you.",
   },
 
   {
@@ -1407,7 +1407,7 @@ export const phrasePopularVerb = [
   },
   {
     en: "take back",
-    ru: "отдать обратно; взять обратно",
+    ru: "отдать обратно, взять обратно",
     part_of_speech: "v",
     pronunciation: "",
     example: "I take back what I said earlier.",
