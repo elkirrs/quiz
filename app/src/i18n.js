@@ -108,6 +108,8 @@ const ru = {
   'Search': 'Поиск',
   'No words found': 'Слова не найдены',
   'Answer Result': 'Результаты ответов',
+  'Search answers': 'Поиск ответов',
+  'Status': 'Результат',
   'Correct answer': 'Правильный ответ',
   'No answers found': 'Ответы не найдены',
   'Question': 'Вопрос',
