@@ -96,10 +96,12 @@
       <v-card class="study-card mb-4" rounded="lg" elevation="2">
         <v-card-text class="text-center pa-3 pa-sm-4">
           <div class="question-heading">
-            <div class="text-body-1 text-medium-emphasis">{{ $t('How is the word translated?') }}</div>
+            <div class="text-body-1 text-medium-emphasis">
+              {{ $t(mode === 'gap' ? 'Fill in the missing word' : mode === 'pairs' ? 'Match the pairs' : 'How is the word translated?') }}
+            </div>
             <div class="question-actions">
               <v-btn
-                v-if="helper !== null"
+                v-if="helper !== null && mode !== 'pairs' && (mode !== 'gap' || answerSubmitted)"
                 icon="mdi-information-outline"
                 size="small"
                 color="primary"
@@ -108,6 +110,7 @@
                 @click="dialog = true"
               />
               <v-btn
+                v-if="mode !== 'pairs'"
                 :icon="isFavorite(currentWord) ? 'mdi-star' : 'mdi-star-outline'"
                 :aria-label="$t(isFavorite(currentWord) ? 'Remove from favorites' : 'Add to favorites')"
                 color="teal"
@@ -118,9 +121,12 @@
             </div>
           </div>
           <div class="question-word">
-            <h2 class="study-word text-h5 font-weight-bold">{{ question }}</h2>
+            <h2 v-if="mode !== 'pairs'" class="study-word text-h5 font-weight-bold">
+              {{ question }}
+            </h2>
+            <div v-else class="text-body-2">{{ $t('Choose an English word and its translation') }}</div>
             <v-chip
-              v-if="currentWordObj.part_of_speech"
+              v-if="mode !== 'pairs' && currentWordObj.part_of_speech"
               size="small"
               variant="tonal"
               color="teal"
@@ -131,6 +137,27 @@
           </div>
         </v-card-text>
       </v-card>
+
+      <div v-if="mode === 'pairs'" class="pair-grid mb-4">
+        <div class="pair-column">
+          <div class="text-caption text-medium-emphasis">{{ $t('ENGLISH') }}</div>
+          <v-btn v-for="index in pairRound" :key="index" block variant="outlined" rounded="lg"
+            class="custom-button pair-button text-lowercase pa-2" color="teal"
+            :class="{ 'pair-selected': pairSelected === index }"
+            :disabled="usedIndexes.has(index)" :aria-pressed="pairSelected === index"
+            @click="selectPairWord(index)">
+            <span class="btn-text-wrap">{{ listWords[index].en }}</span>
+          </v-btn>
+        </div>
+        <div class="pair-column">
+          <div class="text-caption text-medium-emphasis">{{ $t('TRANSLATION') }}</div>
+          <v-btn v-for="index in pairTranslations" :key="index" block variant="outlined" rounded="lg"
+            class="custom-button pair-button text-lowercase pa-2" color="teal"
+            :disabled="usedIndexes.has(index)" @click="selectPairTranslation(index)">
+            <span class="btn-text-wrap">{{ listWords[index].ru }}</span>
+          </v-btn>
+        </div>
+      </div>
 
       <div v-if="mode === 'list'" class="d-flex flex-column gap-2 mb-6">
         <v-row align="stretch" justify="center" no-gutters>
@@ -159,7 +186,15 @@
         </v-row>
       </div>
 
-      <div v-if="mode === 'manual' && !isBtnContinue" class="mb-4">
+      <div v-if="separateVerbForms && !isBtnContinue" class="mb-4">
+        <v-text-field
+          v-model="verbPast" :label="$t('Past simple')" variant="outlined"
+          density="comfortable" color="teal" autofocus @update:model-value="$nextTick(saveState)" />
+        <v-text-field
+          v-model="verbParticiple" :label="$t('Past participle')" variant="outlined"
+          density="comfortable" color="teal" @update:model-value="$nextTick(saveState)" />
+      </div>
+      <div v-else-if="(mode === 'manual' || mode === 'gap') && !isBtnContinue" class="mb-4">
         <v-text-field
           v-model="userAnswer"
           clearable
@@ -174,7 +209,7 @@
         />
       </div>
 
-      <div v-if="mode === 'manual' && answeredIsView" class="mb-4">
+      <div v-if="(mode === 'manual' || mode === 'gap') && answeredIsView" class="mb-4">
         <v-text-field
           v-model="answeredFeedback"
           disabled
@@ -195,8 +230,15 @@
         rounded="lg"
       >
         <div v-html="$localizeMessage(feedback)"></div>
+        <div v-if="separateVerbForms && typeCorrect === 'error'" class="mt-2">
+          <div v-for="(form, index) in verbFormFeedback" :key="form.label">
+            <v-icon :icon="form.correct ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'"
+              :color="form.correct ? 'success' : 'error'" size="small" />
+            {{ $t(form.label) }}: {{ form.value }} — {{ currentWordObj.correctAnswer[index] }}
+          </div>
+        </div>
         <v-btn
-          v-if="typeCorrect === 'error'"
+          v-if="typeCorrect === 'error' && mode !== 'pairs'"
           class="mt-2"
           size="small"
           variant="outlined"
@@ -219,7 +261,8 @@
         color="teal"
         rounded="lg"
         class="quiz-action"
-        :disabled="mode === 'manual' && !userAnswer.trim()"
+        :disabled="(mode === 'manual' || mode === 'gap') && (separateVerbForms
+          ? !verbPast.trim() || !verbParticiple.trim() : !(userAnswer || '').trim())"
         @click="checkAnswer"
       >
         {{ $t('Check answer') }}
@@ -331,6 +374,8 @@
 import {allWords} from '@/data/words'
 import {allIrregularVerbs} from '@/data/irregular-verbs'
 import {wordKey} from '@/quiz-storage'
+import {isReviewDue} from '@/review-schedule'
+import {gapExample, pairConflicts} from '@/quiz-modes'
 import {translate as t} from '@/i18n'
 
 export default {
@@ -339,6 +384,7 @@ export default {
     countAnswerOptions: {type: Number, default: 10},
     favorites: {type: Object, default: () => ({})},
     mistakes: {type: Object, default: () => ({})},
+    reviews: {type: Object, default: () => ({})},
     initialState: {type: Object, default: null},
     onReset: Function
   },
@@ -351,9 +397,15 @@ export default {
       studyWords: [],
       listWords: [],
       userAnswer: '',
+      verbPast: '',
+      verbParticiple: '',
       answerSubmitted: false,
       selectedOption: null,
       mistakenWords: [],
+      reviewedKeys: [],
+      pairRound: [],
+      pairTranslations: [],
+      pairSelected: null,
       reviewWords: null,
       initialWords: null,
       optionWords: [],
@@ -402,7 +454,21 @@ export default {
   },
   computed: {
     mode() {
-      return this.settings.mode || 'manual'
+      return this.separateVerbForms || this.settings.quiz === 'verbs' ? 'manual' : (this.settings.mode || 'manual')
+    },
+    separateVerbForms() {
+      return this.settings.quiz === 'verbs' && !!this.settings.separateVerbForms
+    },
+    verbFormFeedback() {
+      if (!this.separateVerbForms || !this.currentWord) return []
+      const correct = this.normalizeVerbForms(this.currentWordObj.correctAnswer)
+      return [
+        {label: 'Past simple', value: this.verbPast},
+        {label: 'Past participle', value: this.verbParticiple},
+      ].map((form, index) => {
+        const normalized = this.normalize(form.value)
+        return {...form, correct: normalized.length === 1 && correct[index].includes(normalized[0])}
+      })
     },
     direction() {
       return this.settings.trans || 'en-ru'
@@ -428,12 +494,20 @@ export default {
     currentWordObj() {
       if (!this.currentWord) return {}
 
+      if (this.mode === 'gap') {
+        const gap = gapExample(this.currentWord)
+        return {question: gap.question, correctAnswer: gap.answers, part_of_speech: this.currentWord.part_of_speech}
+      }
+
       let current = {};
 
       if (this.settings.quiz === 'verbs') {
         current = {
-          question: this.currentWord.translation,
-          correctAnswer: [
+          question: this.separateVerbForms
+            ? `${this.currentWord.infinitive} — ${this.currentWord.translation}`
+            : this.currentWord.translation,
+          ordered: this.separateVerbForms,
+          correctAnswer: this.separateVerbForms ? [this.currentWord.past, this.currentWord.past_participle] : [
             this.currentWord.infinitive,
             this.currentWord.past,
             this.currentWord.past_participle,
@@ -494,6 +568,8 @@ export default {
 
       if (this.reviewWords) {
         this.listWords = [...this.reviewWords]
+      } else if (this.settings.selectedPool && ['gap', 'pairs'].includes(this.mode)) {
+        this.listWords = [...this.settings.selectedPool]
       } else if (this.settings.quiz === 'verbs') {
         const units = this.settings.verbs.length ? this.settings.verbs
           : (this.settings.wordFilter !== 'all' ? Object.keys(allIrregularVerbs) : [])
@@ -517,9 +593,9 @@ export default {
       }
 
       if (!this.reviewWords) {
-        this.optionWords = [...this.listWords]
+        this.optionWords = ['gap', 'pairs'].includes(this.mode) ? [] : [...this.listWords]
         const filter = this.settings.wordFilter || 'all'
-        if (filter !== 'all' && this.initialWords) {
+        if ((filter !== 'all' || this.settings.spacedReview || ['gap', 'pairs'].includes(this.mode)) && this.initialWords) {
           this.listWords = [...this.initialWords]
         } else {
           this.listWords = this.listWords.filter(word => {
@@ -529,11 +605,14 @@ export default {
               (filter === 'difficult' && (this.mistakes[key] || 0) >= 2)
           })
         }
+        if (this.settings.spacedReview && !this.initialWords && !this.settings.selectedPool) {
+          this.listWords = this.listWords.filter(word => isReviewDue(this.reviews[wordKey(word, this.settings.quiz)]))
+        }
         const limit = this.settings.quiz === 'random' ? this.settings.amount : null
         if (limit) {
           this.listWords = this.shuffle(this.listWords).slice(0, limit)
         }
-        if (filter !== 'all' && !this.initialWords) this.initialWords = [...this.listWords]
+        if ((filter !== 'all' || this.settings.spacedReview || this.settings.selectedPool) && !this.initialWords) this.initialWords = [...this.listWords]
       }
       this.listWords = this.shuffle(this.listWords)
       this.stats.total = this.listWords.length
@@ -560,9 +639,10 @@ export default {
       this.startTime = new Date()
       this.nextWord()
     },
-    saveState() {
-      const keys = ['studying', 'studyIndex', 'studyWords', 'listWords', 'userAnswer',
-        'answerSubmitted', 'selectedOption', 'mistakenWords', 'reviewWords', 'initialWords', 'optionWords',
+    saveState(reviewAnswer = null) {
+      const keys = ['studying', 'studyIndex', 'studyWords', 'listWords', 'userAnswer', 'verbPast', 'verbParticiple',
+        'answerSubmitted', 'selectedOption', 'mistakenWords', 'reviewedKeys', 'reviewWords', 'initialWords', 'optionWords',
+        'pairRound', 'pairTranslations', 'pairSelected',
         'feedback', 'answeredFeedback', 'answeredIsView', 'helper', 'isCorrect',
         'isBtnContinue', 'isBtnAnswer', 'isBtnResetQuiz', 'typeCorrect', 'currentIndex',
         'options', 'answerList', 'question', 'stats', 'resultPercentage', 'resultColor']
@@ -570,14 +650,14 @@ export default {
       state.usedIndexes = [...this.usedIndexes]
       state.startTime = this.startTime?.toISOString()
       state.savedAt = new Date().toISOString()
-      this.$emit('checkpoint', state)
+      this.$emit('checkpoint', state, reviewAnswer)
     },
     restoreState(state) {
       const {usedIndexes, startTime, savedAt, ...fields} = state
       Object.assign(this, fields)
       this.usedIndexes = new Set(usedIndexes)
       this.startTime = new Date(Date.parse(startTime) + Date.now() - Date.parse(savedAt))
-      if (this.answerSubmitted && this.typeCorrect === 'error') {
+      if (this.answerSubmitted && this.typeCorrect === 'error' && this.mode !== 'pairs') {
         this.feedback = `${t('Incorrect. Correct:')} <strong>${this.currentWordObj.correctAnswer}</strong>`
       } else if (this.typeCorrect === 'warning') {
         this.feedback = t('Enter the answer in the field')
@@ -585,7 +665,10 @@ export default {
       if (this.settings.quiz === 'verbs' && this.helper) {
         this.helper = t('Verb:') + ' <strong>' + this.currentWord?.infinitive + '</strong>'
       }
-      if (this.answerSubmitted && this.isCorrect && !this.studying) {
+      if (!this.studying && this.mode === 'pairs' && this.pairRound.length &&
+          this.pairRound.every(index => this.usedIndexes.has(index))) {
+        this.nextWord()
+      } else if (this.answerSubmitted && this.isCorrect && !this.studying && this.mode !== 'pairs') {
         this.nextWord()
       } else {
         this.saveState()
@@ -598,6 +681,73 @@ export default {
       this.isBtnAnswer = isBtnAnswer
       this.isBtnContinue = isBtnContinue
       this.isBtnResetQuiz = isBtnResetQuiz
+    },
+    startPairRound() {
+      this.pairRound = []
+      for (let index = 0; index < this.listWords.length && this.pairRound.length < (this.settings.pairCount ?? 4); index++) {
+        if (!this.usedIndexes.has(index) &&
+            this.pairRound.every(other => !pairConflicts(this.listWords[index], this.listWords[other]))) {
+          this.pairRound.push(index)
+        }
+      }
+      this.pairTranslations = this.shuffle(this.pairRound)
+      this.pairSelected = null
+      this.feedback = ''
+      this.answerSubmitted = false
+      this.handlerButton(false, false, false)
+      this.saveState()
+    },
+    selectPairWord(index) {
+      this.pairSelected = index
+      this.feedback = ''
+      this.saveState()
+    },
+    selectPairTranslation(index) {
+      if (this.pairSelected === null) {
+        this.feedback = t('Choose an English word first.')
+        this.typeCorrect = 'warning'
+        return
+      }
+      const selected = this.pairSelected
+      const word = this.listWords[selected]
+      const correct = selected === index
+      let reviewAnswer = null
+      if (this.settings.spacedReview) {
+        const key = wordKey(word, this.settings.quiz)
+        if (!this.reviewedKeys.includes(key)) {
+          this.reviewedKeys.push(key)
+          reviewAnswer = {word, correct}
+        }
+      }
+      this.answerList.unshift({
+        input: this.listWords[index].ru,
+        answer: {question: word.en, correctAnswer: word.ru},
+        isCorrect: correct,
+      })
+      this.stats.attempt++
+      this.typeCorrect = correct ? 'success' : 'error'
+      this.feedback = t(correct ? 'Correct!' : 'Incorrect. Try another pair.')
+      if (correct) {
+        this.usedIndexes.add(selected)
+        this.stats.correct++
+        this.stats.remained--
+      } else {
+        this.stats.incorrect++
+        this.$emit('mistake', word)
+        if (!this.mistakenWords.some(item => this.wordKey(item) === this.wordKey(word))) {
+          this.mistakenWords.push(word)
+        }
+      }
+      this.pairSelected = null
+      this.$emit('answer-list', this.answerList)
+      const roundComplete = this.pairRound.every(item => this.usedIndexes.has(item))
+      this.saveState(reviewAnswer)
+      if (roundComplete) {
+        this.nextWordTimeout = setTimeout(() => {
+          this.nextWordTimeout = null
+          this.nextWord()
+        }, 400)
+      }
     },
     normalizeVerbForms(forms) {
       return forms.map(form => {
@@ -632,17 +782,21 @@ export default {
       const ignoreParenthetical = this.mode === 'manual' &&
         this.settings.quiz !== 'verbs' &&
         this.direction === 'en-ru'
-      const input = this.normalize(this.userAnswer, ignoreParenthetical)
+      const input = this.separateVerbForms
+        ? [this.normalize(this.verbPast), this.normalize(this.verbParticiple)]
+        : this.normalize(this.userAnswer || '', ignoreParenthetical)
       const correct = this.settings.quiz === 'verbs'
         ? this.normalizeVerbForms(this.currentWordObj.correctAnswer)
-        : this.prepareCorrectWord(this.currentWordObj.correctAnswer, ignoreParenthetical)
+        : this.mode === 'gap'
+          ? this.currentWordObj.correctAnswer.flatMap(answer => this.normalize(answer))
+          : this.prepareCorrectWord(this.currentWordObj.correctAnswer, ignoreParenthetical)
 
       this.answeredIsView = false;
       this.isCorrect = false;
       this.typeCorrect = 'error'
       this.feedback = `${t('Incorrect. Correct:')} <strong>${this.currentWordObj.correctAnswer}</strong>`;
 
-      if (input.length === 0) {
+      if (input.length === 0 || (this.separateVerbForms && input.some(form => form.length !== 1))) {
         this.typeCorrect = 'warning'
         this.feedback = t('Enter the answer in the field')
         this.handlerButton(true, false, false)
@@ -651,10 +805,22 @@ export default {
 
       this.answerSubmitted = true
       let isCorrectAnswer = false;
-      if (this.settings.quiz === 'verbs') {
+      if (this.separateVerbForms) {
+        isCorrectAnswer = input.every((form, index) => correct[index].includes(form[0]))
+      } else if (this.settings.quiz === 'verbs') {
         isCorrectAnswer = this.matchesVerbForms(input, correct);
+      } else if (this.mode === 'gap') {
+        isCorrectAnswer = input.length === 1 && correct.includes(input[0])
       } else {
         isCorrectAnswer = input.every(word => correct.includes(word));
+      }
+      let reviewAnswer = null
+      if (this.settings.spacedReview) {
+        const key = wordKey(this.currentWord, this.settings.quiz)
+        if (!this.reviewedKeys.includes(key)) {
+          this.reviewedKeys.push(key)
+          reviewAnswer = {word: this.currentWord, correct: isCorrectAnswer}
+        }
       }
 
       if (isCorrectAnswer) {
@@ -676,20 +842,21 @@ export default {
         if (this.settings?.lastMistake) {
           this.listWords.push(this.currentWord)
         }
-        this.answeredFeedback = this.userAnswer;
+        this.answeredFeedback = this.separateVerbForms
+          ? [this.verbPast, this.verbParticiple].join(', ') : this.userAnswer;
         this.answeredIsView = true;
         this.userAnswer = ''
         this.handlerButton(false, true, false)
       }
 
       this.answerList.unshift({
-        input: input,
+        input: this.separateVerbForms ? input.map(form => form[0]) : input,
         answer: this.currentWordObj,
         isCorrect: this.isCorrect
       })
 
       this.updateStats(this.isCorrect)
-      this.saveState()
+      this.saveState(reviewAnswer)
 
     },
     handleMultipleChoice(option) {
@@ -707,6 +874,11 @@ export default {
       this.answeredIsView = false;
       this.helper = null
       this.speechError = ''
+
+      if (this.mode === 'pairs' && this.usedIndexes.size < this.listWords.length) {
+        this.startPairRound()
+        return
+      }
 
       if (this.usedIndexes.size === this.listWords.length) {
         this.answerSubmitted = true
@@ -736,13 +908,17 @@ export default {
       this.answerSubmitted = false
       this.selectedOption = null
       this.userAnswer = ''
+      this.verbPast = ''
+      this.verbParticiple = ''
       this.feedback = ''
       this.isCorrect = false
 
       this.handlerButton(true, false, false)
 
       const current = this.currentWordObj
-      this.question = this.splitWord(current.question)
+      this.question = this.mode === 'gap' ? current.question : this.separateVerbForms
+        ? `${this.currentWord.infinitive} — ${this.splitWord(this.currentWord.translation)}`
+        : this.splitWord(current.question)
 
       if (this.mode === 'list') {
         this.options = this.generateOptions(current.correctAnswer)
@@ -751,7 +927,7 @@ export default {
 
       if (this.settings.quiz === 'verbs') {
         this.helper =  t('Verb:') + ' <strong>' + this.currentWord?.infinitive + '</strong>';
-      } else {
+      } else if (this.mode !== 'gap') {
         this.helper = this.currentWord?.example || null;
       }
       this.saveState()
@@ -896,8 +1072,8 @@ export default {
           event.preventDefault()
           this.handleMultipleChoice(option)
         }
-      } else if (event.key === 'Enter' &&
-          (!isEditable || (this.mode === 'manual' && target.matches('input'))) &&
+      } else if (event.key === 'Enter' && this.mode !== 'pairs' &&
+          (!isEditable || (['manual', 'gap'].includes(this.mode) && target.matches('input'))) &&
           !(target instanceof HTMLElement && target.closest('button, a, [role="button"]'))) {
         if (this.isBtnContinue) {
           event.preventDefault()
@@ -918,6 +1094,8 @@ export default {
       this.nextWordTimeout = null
       this.dialog = false
       this.userAnswer = ''
+      this.verbPast = ''
+      this.verbParticiple = ''
       this.feedback = ''
       this.isCorrect = false
       this.isBtnContinue = false
@@ -925,6 +1103,9 @@ export default {
       this.typeCorrect = null
       this.currentIndex = 0
       this.usedIndexes.clear()
+      this.pairRound = []
+      this.pairTranslations = []
+      this.pairSelected = null
       this.answerList = []
       this.$emit('answer-list', this.answerList)
       this.mistakenWords = []
@@ -955,6 +1136,13 @@ export default {
 </script>
 
 <style scoped>
+.pair-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pair-column { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.pair-button { min-width: 0; }
+.pair-button.pair-selected {
+  border-width: 2px;
+  box-shadow: inset 0 0 0 999px rgba(0, 150, 136, 0.16);
+}
 .quiz-layout {
   padding: clamp(0.75rem, 3vw, 1.5rem) 0 6rem;
 }
@@ -1079,6 +1267,22 @@ export default {
 .custom-button:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
+}
+
+@media (max-width: 599px) {
+  .pair-grid {
+    gap: 8px;
+  }
+
+  .custom-button.pair-button {
+    min-height: 48px;
+    padding: 8px !important;
+  }
+
+  .pair-button .btn-text-wrap {
+    font-size: 0.875rem;
+    line-height: 1.35;
+  }
 }
 
 .quiz-action {

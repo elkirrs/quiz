@@ -25,6 +25,13 @@
           <div class="text-body-2 text-medium-emphasis" aria-live="polite">
             {{ $t('Found') }}: <strong>{{ filteredAnswers.length }}</strong> / {{ flattenedAnswers.length }}
           </div>
+          <v-checkbox
+            v-model="mistakesOnly"
+            :label="$t('Mistakes only')"
+            color="teal"
+            density="compact"
+            hide-details
+          />
         </div>
 
         <div class="d-none d-md-block">
@@ -102,6 +109,7 @@ export default {
   data() {
     return {
       search: '',
+      mistakesOnly: false,
       mobilePage: 1,
       desktopPage: 1,
       mobilePageSize: 20,
@@ -133,11 +141,11 @@ export default {
     flattenedAnswers() {
       return this.answerList.map(item => {
         const correctArr = Array.isArray(item.answer?.correctAnswer)
-          ? item.answer.correctAnswer.slice().sort()
+          ? (item.answer.ordered ? item.answer.correctAnswer.slice() : item.answer.correctAnswer.slice().sort())
           : [item.answer?.correctAnswer || ''];
 
         const inputArr = Array.isArray(item.input)
-          ? item.input.slice().sort()
+          ? (item.answer?.ordered ? item.input.slice() : item.input.slice().sort())
           : [item.input || ''];
 
         const isCorrect = item.isCorrect;
@@ -153,7 +161,7 @@ export default {
     filteredAnswers() {
       const query = (this.search || '').trim().toLowerCase();
       return this.flattenedAnswers.filter(item =>
-        Object.values(item).some(val =>
+        (!this.mistakesOnly || !item.isCorrect) && Object.values(item).some(val =>
           String(val).toLowerCase().includes(query)
         )
       );
@@ -168,6 +176,10 @@ export default {
   },
   watch: {
     search() {
+      this.mobilePage = 1
+      this.desktopPage = 1
+    },
+    mistakesOnly() {
       this.mobilePage = 1
       this.desktopPage = 1
     },

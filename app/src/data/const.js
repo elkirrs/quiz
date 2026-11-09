@@ -25,6 +25,8 @@ export const app = {
     itemsMods: [
       {name: 'Manual input', code: 'manual'},
       {name: 'Selection from the list', code: 'list'},
+      {name: 'Missing word', code: 'gap'},
+      {name: 'Match pairs', code: 'pairs'},
     ],
   },
 

@@ -48,6 +48,7 @@
               :key="'settings-' + resetKey"
               :favorites="learning.favorites"
               :mistakes="learning.mistakes"
+              :reviews="learning.reviews"
               @words-selected="updateWords"
               @quiz-type="quizType"
               @quiz-settings="setQuizSettings"
@@ -60,6 +61,7 @@
               :count-answer-options="settings.countAnswerOptions"
               :favorites="learning.favorites"
               :mistakes="learning.mistakes"
+              :reviews="learning.reviews"
               :initial-state="resumeState"
               @answer-list="updateAnswerList"
               @toggle-favorite="toggleFavorite"
@@ -83,6 +85,9 @@
                 </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
+            <v-card v-if="!settings" class="mt-4" rounded="lg" variant="tonal" color="teal">
+              <v-card-text>{{ $t('Words reviewed successfully') }}: <strong>{{ reviewedCount }}</strong></v-card-text>
+            </v-card>
 
             <QuizTable
               v-if="selectedWords.length && !settings"
@@ -197,6 +202,7 @@
 import {computed, inject, shallowRef, watch, ref} from 'vue'
 import {useLocale} from 'vuetify'
 import {readLearningData, writeLearningData, wordKey} from '@/quiz-storage'
+import {nextReview} from '@/review-schedule'
 import {locale, translate as t, localizeMessage, LANGUAGE_STORAGE_KEY} from '@/i18n'
 import logoLight from '@/assets/logo.png'
 import logoDark from '@/assets/logoD.png'
@@ -219,7 +225,7 @@ function toggleLanguage() {
   }
 }
 
-const learning = ref({ favorites: {}, mistakes: {}, history: [], active: null })
+const learning = ref({ favorites: {}, mistakes: {}, history: [], active: null, reviews: {} })
 const storageError = ref('')
 let storageReadable = true
 try {
@@ -229,6 +235,8 @@ try {
   storageError.value = `${t('Unable to load saved learning data:')} ${t(error.message)}`
 }
 const resumeState = ref(null)
+const reviewedCount = computed(() => Object.values(learning.value.reviews)
+  .filter(record => record.learned ?? record.stage > 0).length)
 const historyByDay = computed(() => {
   const days = new Map()
   for (const result of learning.value.history) {
@@ -264,8 +272,14 @@ function recordMistake(word) {
   learning.value.mistakes[key] = (learning.value.mistakes[key] || 0) + 1
   persist()
 }
-function saveCheckpoint(state) {
-  learning.value.active = { settings: settings.value, state }
+function saveCheckpoint(state, reviewAnswer) {
+  if (reviewAnswer) {
+    const key = wordKey(reviewAnswer.word, settings.value.quiz)
+    learning.value.reviews[key] = nextReview(learning.value.reviews[key], reviewAnswer.correct)
+  }
+  const savedSettings = {...settings.value}
+  delete savedSettings.selectedPool
+  learning.value.active = { settings: savedSettings, state }
   persist()
 }
 function saveResult(result) {
@@ -275,7 +289,12 @@ function saveResult(result) {
 }
 function resumeQuiz() {
   resumeState.value = learning.value.active.state
-  settings.value = learning.value.active.settings
+  const savedSettings = learning.value.active.settings
+  settings.value = savedSettings.listeningTask && savedSettings.listeningTask !== 'off'
+    ? {...savedSettings, trans: savedSettings.listeningTask === 'translate' ? 'en-ru' : 'ru-en',
+        mode: savedSettings.listeningTask === 'write' ? 'manual' : savedSettings.mode,
+        listeningTask: undefined}
+    : savedSettings
   answerWordList.value = resumeState.value.answerList
 }
 function discardQuiz() {

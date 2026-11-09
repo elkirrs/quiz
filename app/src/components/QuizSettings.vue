@@ -139,7 +139,7 @@
     </v-select>
 
     <v-select
-      v-if="selectedQuiz === 'words' || selectedQuiz === 'random' "
+      v-if="(selectedQuiz === 'words' || selectedQuiz === 'random') && ['manual', 'list'].includes(selectedMod)"
       v-model="selectedTrans"
       :items="itemsTrans"
       item-title="name"
@@ -161,7 +161,7 @@
     </v-select>
 
     <v-select
-      v-if="selectedQuiz === 'words' || selectedQuiz === 'random' "
+      v-if="selectedQuiz === 'words' || selectedQuiz === 'random'"
       v-model="selectedMod"
       :items="itemsMods"
       item-title="name"
@@ -210,6 +210,27 @@
           :disabled="mobileAnswerOptions >= 10"
           @click="mobileAnswerOptions++"
         />
+      </template>
+    </v-text-field>
+
+    <v-text-field
+      v-if="xs && selectedMod === 'pairs' && (selectedQuiz === 'words' || selectedQuiz === 'random')"
+      :model-value="mobilePairCount"
+      :density="settings.density"
+      :label="$t('Pairs per round')"
+      :variant="settings.variant"
+      :color="settings.color"
+      readonly
+    >
+      <template #prepend-inner>
+        <v-btn icon="mdi-minus" size="small" variant="text"
+          :aria-label="$t('Decrease pairs per round')"
+          :disabled="mobilePairCount <= 4" @click="mobilePairCount--" />
+      </template>
+      <template #append-inner>
+        <v-btn icon="mdi-plus" size="small" variant="text"
+          :aria-label="$t('Increase pairs per round')"
+          :disabled="mobilePairCount >= 6" @click="mobilePairCount++" />
       </template>
     </v-text-field>
 
@@ -271,8 +292,22 @@
       </v-slider>
     </div>
 
+    <v-switch v-if="selectedQuiz === 'verbs'" v-model="separateVerbForms"
+      :label="$t('Separate fields for verb forms')" :color="settings.color" density="compact" hide-details />
     <v-switch v-model="studyFirst" :label="$t('Study cards before the quiz')" :color="settings.color" density="compact" hide-details />
-    <v-switch v-model="checkbox" :label="$t('Until the last mistake')" :color="settings.color" density="compact" hide-details />
+    <v-switch v-model="spacedReview" :label="$t('Spaced review')"
+      :color="settings.color" density="compact" hide-details />
+    <v-switch v-if="selectedQuiz === 'verbs' || selectedMod !== 'pairs'" v-model="checkbox"
+      :label="$t('Until the last mistake')" :color="settings.color" density="compact" hide-details />
+    <v-alert v-if="selectedQuiz !== 'verbs' && selectedMod === 'pairs'" class="mt-3"
+      type="info" variant="tonal" density="comfortable">
+      {{ $t('Maximum pairs per round') }}: {{ xs ? mobilePairCount : 6 }}.
+      {{ $t('Match every pair to continue.') }}
+    </v-alert>
+    <v-alert v-if="selectedQuiz !== 'verbs' && selectedMod === 'gap' && eligibleWords.length"
+      class="mt-3" type="info" variant="tonal" density="comfortable">
+      {{ $t('Words excluded because no suitable example was found') }}: {{ excludedGapCount }}
+    </v-alert>
 
     <v-snackbar
       v-model="snackbar.show"
@@ -302,6 +337,8 @@ import {allIrregularVerbs, mapUnit as mapVerbUnit} from '@/data/irregular-verbs'
 import {app} from '@/data/const.js'
 import {useDisplay} from 'vuetify'
 import {wordKey} from '@/quiz-storage'
+import {isReviewDue} from '@/review-schedule'
+import {gapExample, pairTokens} from '@/quiz-modes'
 import {translate as t} from '@/i18n'
 
 export default {
@@ -309,6 +346,7 @@ export default {
   props: {
     favorites: {type: Object, default: () => ({})},
     mistakes: {type: Object, default: () => ({})},
+    reviews: {type: Object, default: () => ({})},
   },
   emits: ['words-selected', 'quiz-settings', 'quiz-type'],
   setup() {
@@ -330,8 +368,11 @@ export default {
     selectedTrans: app.settings.default.trans,
     selectedMod: app.settings.default.mod,
     mobileAnswerOptions: 4,
+    mobilePairCount: 4,
     wordFilter: 'all',
     studyFirst: false,
+    spacedReview: false,
+    separateVerbForms: false,
 
     sliderValue: 50,
     sliderMaxValue: 100,
@@ -357,6 +398,18 @@ export default {
     },
     itemsMods() {
       return app.settings.itemsMods.map(item => ({...item, name: t(item.name)}))
+    },
+    eligibleWords() {
+      return this.getSelectedWords().filter(word => {
+        const key = wordKey(word, this.selectedQuiz)
+        const matches = this.wordFilter === 'all' ||
+          (this.wordFilter === 'favorites' && this.favorites[key]) ||
+          (this.wordFilter === 'difficult' && (this.mistakes[key] || 0) >= 2)
+        return matches && (!this.spacedReview || isReviewDue(this.reviews[key]))
+      })
+    },
+    excludedGapCount() {
+      return this.eligibleWords.filter(word => !gapExample(word)).length
     },
     itemsLevel() {
       return Object.keys(mapLevel).map(code => ({name: t(mapLevel[code]), code}))
@@ -426,15 +479,19 @@ export default {
         return;
       }
 
-      const selectedWords = this.getSelectedWords()
-      const filteredWords = selectedWords.filter(word => {
-        const key = wordKey(word, this.selectedQuiz)
-        return this.wordFilter === 'all' ||
-          (this.wordFilter === 'favorites' && this.favorites[key]) ||
-          (this.wordFilter === 'difficult' && (this.mistakes[key] || 0) >= 2)
-      })
+      const filteredWords = this.eligibleWords
       if (!filteredWords.length) {
-        showError('No words match the selected filter.')
+        showError(this.spacedReview ? 'No words are due for review.' : 'No words match the selected filter.')
+        return
+      }
+      const specialMode = this.selectedQuiz !== 'verbs' && ['gap', 'pairs'].includes(this.selectedMod)
+      const pool = !specialMode ? null : filteredWords.filter(word =>
+        this.selectedMod === 'gap' ? gapExample(word) :
+          typeof word.en === 'string' && typeof word.ru === 'string' &&
+          pairTokens(word.en).length && pairTokens(word.ru).length
+      )
+      if (specialMode && !pool.length) {
+        showError(this.selectedMod === 'gap' ? 'No suitable examples found.' : 'No suitable pairs found.')
         return
       }
       const countAnswerOptions = this.xs ? this.mobileAnswerOptions : 10
@@ -448,8 +505,12 @@ export default {
         lastMistake: this.checkbox,
         amount: this.sliderValue,
         countAnswerOptions,
+        pairCount: this.xs ? this.mobilePairCount : 6,
         wordFilter: this.wordFilter,
-        studyFirst: this.studyFirst
+        studyFirst: this.studyFirst,
+        spacedReview: this.spacedReview,
+        separateVerbForms: this.selectedQuiz === 'verbs' && this.separateVerbForms,
+        selectedPool: pool
       });
     },
     decrement() {

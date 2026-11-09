@@ -51,7 +51,25 @@ hear the English word or verb forms; speech playback requires browser support.
 If no units are selected, the favorites and
 difficult-word filters search all units of the selected quiz type.
 
-Favorites, mistake counts, completed quiz history, and unfinished quiz progress
+Enable spaced review to practise selected words that are due, including words
+not yet reviewed. A first correct answer schedules the word for one day later;
+subsequent correct reviews use intervals of 3, 7 and 14 days. A mistake resets
+the interval and schedules the word for tomorrow. Only the first answer to a
+word in a quiz updates its schedule. The counter shows words successfully
+reviewed at least once; mistakes reset their review stage. Filter the answer results
+to show only mistakes, including when searching.
+For irregular verbs, optionally enter the past simple and past participle in
+separate fields; the infinitive is shown in the question.
+In missing-word mode, type the English word omitted from its example. Words
+without a reliably matchable example are excluded, with their count shown in
+settings. In matching mode, select an English word and its Russian translation.
+Rounds contain up to six pairs; on mobile, choose four to six pairs (four by
+default). Conflicting translations and duplicate words
+are placed in separate rounds, so the final round may contain fewer pairs.
+Every pair must be matched before the next round starts automatically. Attempts
+and review schedules are saved.
+
+Favorites, mistake counts, review schedules, completed quiz history, and unfinished quiz progress
 are stored locally in the browser. After reopening the app, choose whether to
 continue an unfinished quiz or start over. These data are not synchronized
 between devices and can be removed when browser site data are cleared.
