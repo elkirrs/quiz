@@ -39,7 +39,7 @@
 
         <p v-if="!filtered.length" class="text-medium-emphasis mt-6">{{ $t('No tenses found') }}</p>
         <v-row v-if="period !== 'All' && !mobile" dense class="selected-period">
-          <v-col v-for="item in filtered" :key="item.name" cols="12" md="3">
+          <v-col v-for="item in filtered" :key="item.name" cols="12" md="4">
             <v-card class="tense-card" rounded="lg" elevation="2">
               <v-card-title class="text-h6 font-weight-bold">{{ item.name }}</v-card-title>
               <TenseDetails :item="item" />
