@@ -32,31 +32,66 @@
       </v-toolbar>
 
       <v-card-text class="pa-4">
-        <v-data-table
-          :headers="headers"
-          :items="filteredAnswers"
-          items-per-page="100"
-          density="compact"
-        >
-          <template v-slot:item="{ item }">
-            <tr :class="item.isCorrect ? 'bg-green-lighten-4' : 'bg-red-lighten-4'">
-              <td>{{ item.question }}</td>
-              <td>{{ item.correctAnswer }}</td>
-              <td>{{ item.userAnswer }}</td>
-              <td>
-        <span :class="item.isCorrect ? 'text-green' : 'text-red'">
-          {{ item.isCorrect ? '✔️' : '❌' }}
-        </span>
-              </td>
-            </tr>
-          </template>
+        <div class="d-none d-md-block">
+          <v-data-table
+            :headers="headers"
+            :items="filteredAnswers"
+            items-per-page="100"
+            density="compact"
+          >
+            <template v-slot:item="{ item }">
+              <tr :class="item.isCorrect ? 'bg-green-lighten-4' : 'bg-red-lighten-4'">
+                <td>{{ item.question }}</td>
+                <td>{{ item.correctAnswer }}</td>
+                <td>{{ item.userAnswer }}</td>
+                <td>
+                  <span :class="item.isCorrect ? 'text-green' : 'text-red'">
+                    {{ item.isCorrect ? '✔️' : '❌' }}
+                  </span>
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
+        </div>
 
-          <template v-slot:item.isCorrect="{ item }">
-            <span :class="item.isCorrect ? 'text-green' : 'text-red'">
-              {{ item.isCorrect ? '✔️' : '❌' }}
-            </span>
-          </template>
-        </v-data-table>
+        <div class="d-md-none">
+          <v-card
+            v-for="(answer, index) in mobileAnswers"
+            :key="`${index}-${answer.question}`"
+            class="mb-3"
+            :class="answer.isCorrect ? 'bg-green-lighten-5' : 'bg-red-lighten-5'"
+            variant="outlined"
+          >
+            <v-card-title class="text-wrap">
+              {{ answer.question }}
+            </v-card-title>
+            <v-card-text>
+              <div class="answer-field">
+                <strong>Correct answer:</strong>
+                <span>{{ answer.correctAnswer }}</span>
+              </div>
+              <div class="answer-field">
+                <strong>Your answer:</strong>
+                <span>{{ answer.userAnswer }}</span>
+              </div>
+              <div class="answer-status" :class="answer.isCorrect ? 'text-green' : 'text-red'">
+                {{ answer.isCorrect ? '✔️ Correct' : '❌ Incorrect' }}
+              </div>
+            </v-card-text>
+          </v-card>
+
+          <div v-if="!filteredAnswers.length" class="text-center pa-4">
+            No answers found
+          </div>
+
+          <v-pagination
+            v-if="filteredAnswers.length > mobilePageSize"
+            v-model="mobilePage"
+            :length="mobilePageCount"
+            :total-visible="5"
+            density="compact"
+          />
+        </div>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -76,6 +111,8 @@ export default {
     return {
       showSearch: false,
       search: '',
+      mobilePage: 1,
+      mobilePageSize: 20,
       headers: [
         { title: 'Question', key: 'question', sortable: true },
         { title: 'Correct Answer', key: 'correctAnswer', sortable: true },
@@ -126,7 +163,22 @@ export default {
           String(val).toLowerCase().includes(query)
         )
       );
+    },
+    mobilePageCount() {
+      return Math.ceil(this.filteredAnswers.length / this.mobilePageSize)
+    },
+    mobileAnswers() {
+      const start = (this.mobilePage - 1) * this.mobilePageSize
+      return this.filteredAnswers.slice(start, start + this.mobilePageSize)
     }
+  },
+  watch: {
+    search() {
+      this.mobilePage = 1
+    },
+    answerList() {
+      this.mobilePage = 1
+    },
   },
   methods: {
     onBlur() {
@@ -143,3 +195,21 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.answer-field {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) minmax(0, 1fr);
+  gap: 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+.answer-field + .answer-field {
+  margin-top: 0.5rem;
+}
+
+.answer-status {
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+</style>

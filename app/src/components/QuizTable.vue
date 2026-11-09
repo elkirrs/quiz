@@ -32,16 +32,54 @@
       </v-toolbar>
 
       <v-card-text class="pa-4">
-        <v-data-table
-          :headers="headers"
-          :items="filteredWords"
-          items-per-page="100"
-          density="compact"
-        >
-          <template v-slot:item.example="{ item }">
-            <div v-html="item.example"></div>
-          </template>
-        </v-data-table>
+        <div class="d-none d-md-block">
+          <v-data-table
+            :headers="headers"
+            :items="filteredWords"
+            items-per-page="100"
+            density="compact"
+          >
+            <template v-slot:item.example="{ item }">
+              <div v-html="item.example"></div>
+            </template>
+          </v-data-table>
+        </div>
+
+        <div class="d-md-none">
+          <v-card
+            v-for="(word, index) in mobileWords"
+            :key="`${word.en || word.infinitive}-${index}`"
+            class="mb-3"
+            variant="outlined"
+          >
+            <v-card-title class="text-wrap">
+              {{ word.en || word.infinitive }}
+            </v-card-title>
+            <v-card-text>
+              <div
+                v-for="header in mobileHeaders(word)"
+                :key="header.key"
+                class="word-field"
+              >
+                <strong>{{ header.title }}:</strong>
+                <span v-if="header.key === 'example'" v-html="word[header.key]"></span>
+                <span v-else>{{ word[header.key] }}</span>
+              </div>
+            </v-card-text>
+          </v-card>
+
+          <div v-if="!filteredWords.length" class="text-center pa-4">
+            No words found
+          </div>
+
+          <v-pagination
+            v-if="filteredWords.length > mobilePageSize"
+            v-model="mobilePage"
+            :length="mobilePageCount"
+            :total-visible="5"
+            density="compact"
+          />
+        </div>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -66,6 +104,8 @@ export default {
       showSearch: false,
       search: '',
       headers: [],
+      mobilePage: 1,
+      mobilePageSize: 20,
     };
   },
   computed: {
@@ -111,10 +151,21 @@ export default {
           return aName.localeCompare(bName);
         });
     },
+    mobilePageCount() {
+      return Math.ceil(this.filteredWords.length / this.mobilePageSize)
+    },
+    mobileWords() {
+      const start = (this.mobilePage - 1) * this.mobilePageSize
+      return this.filteredWords.slice(start, start + this.mobilePageSize)
+    },
   },
   watch: {
+    search() {
+      this.mobilePage = 1
+    },
     words: {
       handler(newWords) {
+        this.mobilePage = 1
         if (newWords.length > 0) {
           this.headers = Object.keys(newWords[0]).map(key => {
             let width = '120px' // значение по умолчанию
@@ -159,6 +210,15 @@ export default {
     window.removeEventListener('keydown', this.handleHotkey);
   },
   methods: {
+    mobileHeaders(word) {
+      const titleKey = word.en ? 'en' : 'infinitive'
+      return this.headers.filter(header =>
+        header.key !== titleKey &&
+        word[header.key] !== '' &&
+        word[header.key] !== null &&
+        word[header.key] !== undefined
+      )
+    },
     humanize(str) {
       return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     },
@@ -176,3 +236,16 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.word-field {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
+  gap: 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+.word-field + .word-field {
+  margin-top: 0.5rem;
+}
+</style>
