@@ -3,42 +3,44 @@
     <v-card>
       <v-toolbar color="teal" dark>
         <v-toolbar-title>{{ $t('Word list') }}</v-toolbar-title>
-
-        <v-btn icon v-if="!showSearch" @click="showSearch = true">
-          <v-icon>mdi-magnify</v-icon>
-        </v-btn>
-
-        <v-text-field
-          v-if="showSearch"
-          v-model="search"
-          ref="searchInput"
-          :placeholder="$t('Search')"
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          hide-details
-          single-line
-          density="compact"
-          variant="solo-filled"
-          class="ml-2"
-          @blur="onBlur"
-          @click:clear="onClear"
-        />
-
         <v-spacer/>
-
-        <v-btn icon @click="dialogModel = false">
+        <v-btn icon :aria-label="$t('Close')" @click="dialogModel = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
 
-      <v-card-text class="pa-4">
+      <v-card-text class="word-list pa-4">
+        <div class="word-list-controls">
+          <v-text-field
+            v-model="search"
+            :label="$t('Search words')"
+            prepend-inner-icon="mdi-magnify"
+            clearable
+            hide-details
+            density="compact"
+            variant="outlined"
+            color="teal"
+            @keydown.stop
+          />
+          <div class="text-body-2 text-medium-emphasis" aria-live="polite">
+            {{ $t('Found') }}: <strong>{{ filteredWords.length }}</strong> / {{ mergedWords.length }}
+          </div>
+        </div>
+
         <div class="d-none d-md-block">
           <v-data-table
+            v-model:page="desktopPage"
             :headers="headers"
             :items="filteredWords"
-            items-per-page="100"
-            density="compact"
+            :items-per-page="100"
+            :no-data-text="$t('No words found')"
+            class="word-table mt-4"
           >
+            <template v-slot:item.part_of_speech="{ item }">
+              <v-chip v-if="item.part_of_speech" size="small" variant="tonal" color="teal" label>
+                {{ item.part_of_speech }}
+              </v-chip>
+            </template>
             <template v-slot:item.example="{ item }">
               <div v-html="item.example"></div>
             </template>
@@ -49,21 +51,25 @@
           <v-card
             v-for="(word, index) in mobileWords"
             :key="`${word.en || word.infinitive}-${index}`"
-            class="mb-3"
-            variant="outlined"
+            class="word-card mb-3"
+            rounded="lg"
+            elevation="2"
           >
-            <v-card-title class="text-wrap">
-              {{ word.en || word.infinitive }}
+            <v-card-title class="word-heading">
+              <span class="text-h6 font-weight-bold">{{ word.en || word.infinitive }}</span>
+              <v-chip v-if="word.part_of_speech" size="small" variant="tonal" color="teal" label>
+                {{ word.part_of_speech }}
+              </v-chip>
             </v-card-title>
-            <v-card-text>
+            <v-card-text class="pt-1">
               <div
                 v-for="header in mobileHeaders(word)"
                 :key="header.key"
                 class="word-field"
               >
-                <strong>{{ header.title }}:</strong>
-                <span v-if="header.key === 'example'" v-html="word[header.key]"></span>
-                <span v-else>{{ word[header.key] }}</span>
+                <div class="text-caption text-medium-emphasis">{{ header.title }}</div>
+                <div v-if="header.key === 'example'" v-html="word[header.key]"></div>
+                <div v-else :class="{ 'text-body-1 font-weight-medium': header.key === 'ru' || header.key === 'translation' }">{{ word[header.key] }}</div>
               </div>
             </v-card-text>
           </v-card>
@@ -86,6 +92,8 @@
 </template>
 
 <script>
+import { mergeWordEntries } from '@/word-list.js'
+
 export default {
   emits: ['update:dialog'],
   props: {
@@ -101,27 +109,28 @@ export default {
   },
   data() {
     return {
-      showSearch: false,
       search: '',
       mobilePage: 1,
+      desktopPage: 1,
       mobilePageSize: 20,
     };
   },
   computed: {
     headers() {
       if (!this.words.length) return []
-      return Object.keys(this.words[0]).map(key => {
+      const keys = [...new Set(this.words.flatMap(word => Object.keys(word)))]
+      return keys.map(key => {
         let width = '120px'
         if (key === 'en') width = '200px'
-        if (key === 'ru') width = '350px'
-        if (key === 'example') width = '400px'
+        if (key === 'ru' || key === 'translation') width = '220px'
+        if (key === 'example') width = '260px'
         return {
-          title: this.humanize(key),
+          title: key === 'en' ? this.$t('English') : key === 'ru' ? this.$t('Translation') : this.humanize(key),
           key,
           sortable: true,
           align: 'start',
-          headerProps: { style: `width: ${width}; min-width: ${width}; max-width: ${width};` },
-          cellProps: { style: `width: ${width}; min-width: ${width}; max-width: ${width}; white-space: normal;` }
+          headerProps: { style: `min-width: ${width};` },
+          cellProps: { style: `min-width: ${width}; white-space: normal; overflow-wrap: anywhere;` }
         }
       })
     },
@@ -133,9 +142,12 @@ export default {
         this.$emit('update:dialog', val);
       }
     },
+    mergedWords() {
+      return mergeWordEntries(this.words, this.quiz)
+    },
     filteredWords() {
-      const search = this.search.toLowerCase();
-      return this.words
+      const search = (this.search || '').trim().toLowerCase();
+      return this.mergedWords
         .filter(item => {
           return Object.values(item).some(val => {
             if (typeof val === 'string') {
@@ -144,22 +156,6 @@ export default {
             }
             return false;
           });
-        })
-        .map(item => {
-          if (this.quiz !== 'verbs') {
-            return {
-              ...item,
-              en: item.en.toLowerCase(),
-              ru: item.ru.toLowerCase(),
-            }
-          }
-
-          return {
-            ...item,
-            infinitive: item.infinitive.toLowerCase(),
-            past: item.past.toLowerCase(),
-            past_participle: item.past_participle.toLowerCase(),
-          }
         })
         .sort((a, b) => {
           const aName = (a.en || a.infinitive || '').toLowerCase();
@@ -178,19 +174,14 @@ export default {
   watch: {
     search() {
       this.mobilePage = 1
+      this.desktopPage = 1
     },
     words: {
       handler() {
         this.mobilePage = 1
+        this.desktopPage = 1
       },
       immediate: true,
-    },
-    showSearch(val) {
-      if (val) {
-        this.$nextTick(() => {
-          this.$refs.searchInput?.focus();
-        });
-      }
     },
   },
   mounted() {
@@ -204,22 +195,22 @@ export default {
       const titleKey = word.en ? 'en' : 'infinitive'
       return this.headers.filter(header =>
         header.key !== titleKey &&
+        header.key !== 'part_of_speech' &&
         word[header.key] !== '' &&
         word[header.key] !== null &&
         word[header.key] !== undefined
-      )
+      ).sort((a, b) => {
+        const priority = key => ['ru', 'translation'].includes(key) ? 0 : key === 'example' ? 2 : 1
+        return priority(a.key) - priority(b.key)
+      })
     },
     humanize(str) {
       return this.$t(str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
     },
-    onBlur() {
-      if (!this.search) this.showSearch = false;
-    },
-    onClear() {
-      this.search = '';
-    },
     handleHotkey(event) {
-      if (event.ctrlKey && event.key === 't') {
+      const target = event.target
+      if (event.ctrlKey && event.key === 't' && !target.isContentEditable &&
+          !['INPUT', 'TEXTAREA'].includes(target.tagName)) {
         this.dialogModel = !this.dialogModel
       }
     },
@@ -228,14 +219,14 @@ export default {
 </script>
 
 <style scoped>
-.word-field {
-  display: grid;
-  grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
-  gap: 0.5rem;
-  overflow-wrap: anywhere;
-}
-
-.word-field + .word-field {
-  margin-top: 0.5rem;
-}
+.word-list { max-width: 1500px; width: 100%; margin: 0 auto; }
+.word-list-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.word-list-controls .v-text-field { flex: 1 1 260px; min-width: 0; }
+.word-table { border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)); border-radius: 8px; overflow: hidden; }
+.word-table :deep(.v-table__wrapper > table > thead > tr > th),
+.word-table :deep(.v-table__wrapper > table > tbody > tr > td) { padding: 8px 12px !important; }
+.word-card:first-child { margin-top: 16px; }
+.word-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; white-space: normal; overflow-wrap: anywhere; }
+.word-field { overflow-wrap: anywhere; }
+.word-field + .word-field { margin-top: 12px; }
 </style>
