@@ -597,8 +597,9 @@ export default {
     },
     calculateProgress() {
       const totalWords = this.stats.total;
+      const score = Math.max(0, totalWords - this.stats.incorrect);
       this.resultPercentage = totalWords
-        ? Math.round((this.stats.correct / totalWords) * 100)
+        ? Math.round((score / totalWords) * 100)
         : 0
       const index = Math.min(
         Math.floor(this.resultPercentage / 10),
