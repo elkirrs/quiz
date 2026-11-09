@@ -382,10 +382,13 @@ export default {
       if (this.isBtnContinue || this.answerSubmitted) {
         return
       }
-      const input = this.normalize(this.userAnswer)
+      const ignoreParenthetical = this.mode === 'manual' &&
+        this.settings.quiz !== 'verbs' &&
+        this.direction === 'en-ru'
+      const input = this.normalize(this.userAnswer, ignoreParenthetical)
       const correct = this.settings.quiz === 'verbs'
         ? this.normalizeVerbForms(this.currentWordObj.correctAnswer)
-        : this.prepareCorrectWord(this.currentWordObj.correctAnswer)
+        : this.prepareCorrectWord(this.currentWordObj.correctAnswer, ignoreParenthetical)
 
       this.answeredIsView = false;
       this.isCorrect = false;
@@ -506,17 +509,37 @@ export default {
       return this.shuffle([correct, ...distractors.slice(0, optionCount - 1)])
     },
     splitWord(randomWord) {
-      const words = randomWord.split(',');
+      const words = []
+      let start = 0
+      let parenthesesDepth = 0
+
+      for (let index = 0; index < randomWord.length; index++) {
+        if (randomWord[index] === '(') parenthesesDepth++
+        if (randomWord[index] === ')') parenthesesDepth--
+        if (randomWord[index] === ',' && parenthesesDepth === 0) {
+          words.push(randomWord.slice(start, index))
+          start = index + 1
+        }
+      }
+      words.push(randomWord.slice(start))
+
       const index = Math.floor(Math.random() * words.length)
-      return words[index].trim()
-        .toLowerCase()
-        .replace(/\([^)]*\)/g, '')
+      return words[index]
+        .trim()
+        .split(/(\([^)]*\))/g)
+        .map((part, partIndex) => {
+          if (partIndex % 2 === 1) return part
+
+          return part
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .replace(/[!?.]/g, '')
+            .replace(/[-]/g, ' ')
+            .replace(/[’`]/g, '\'')
+        })
+        .join('')
         .replace(/\s+/g, ' ')
         .trim()
-        .replace(/[!?.]/g, '')
-        .replace(/[-]/g, ' ')
-        .replace(/[’`]/g, '\'')
-        .replace(/\s*[\[\(].*?[\]\)]/g, '')
     },
     updateStats(correct) {
       if (correct) {
@@ -529,16 +552,17 @@ export default {
 
       this.$emit("answer-list", this.answerList)
     },
-    normalize(words) {
-      return words.trim()
-        .toLowerCase()
-        .replace(/\([^)]*\)/g, '')
+    normalize(words, ignoreParenthetical = false) {
+      const normalizedWords = words.trim().toLowerCase()
+      return (ignoreParenthetical
+        ? normalizedWords.replace(/\([^)]*\)/g, '')
+        : normalizedWords)
         .replace(/\s+/g, ' ')
         .trim()
         .replace(/[!?.]/g, '')
         .replace(/[-]/g, ' ')
         .replace(/[’`]/g, '\'')
-        .replace(/\s*[\[\(].*?[\]\)]/g, '')
+        .replace(/\s*\[[^\]]*\]/g, '')
         .split(/[,]+/)
         .map(item => item.trim())
         .filter(Boolean);
@@ -553,13 +577,13 @@ export default {
         .trim()
       )
     },
-    prepareCorrectWord(correctWords) {
+    prepareCorrectWord(correctWords, ignoreParenthetical = false) {
       if (correctWords instanceof Object) {
         return this.normalizeCorrectWords(correctWords)
       }
 
       if (typeof correctWords === 'string') {
-        return this.normalize(correctWords);
+        return this.normalize(correctWords, ignoreParenthetical);
       }
 
       return correctWords;

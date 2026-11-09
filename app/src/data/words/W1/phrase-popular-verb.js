@@ -134,7 +134,7 @@ export const phrasePopularVerb = [
   },
   {
     en: "bring forward",
-    ru: "переносить на более ранний срок, выдвигать (идею / предложение)",
+    ru: "переносить на более ранний срок, выдвигать (идею; предложение)",
     part_of_speech: "v",
     pronunciation: "",
     example: "The meeting was brought forward to Monday.",
@@ -477,7 +477,7 @@ export const phrasePopularVerb = [
   },
   {
     en: "drop out",
-    ru: "выбывать, бросать (учёбу, работу)",
+    ru: "выбывать, бросать (учёбу; работу)",
     part_of_speech: "v",
     pronunciation: "",
     example: "She dropped out of college after one year.",
@@ -534,14 +534,14 @@ export const phrasePopularVerb = [
   },
   {
     en: "fill in",
-    ru: "заполнять (форму, анкету)",
+    ru: "заполнять (форму; анкету)",
     part_of_speech: "v",
     pronunciation: "",
     example: "Please fill in your name at the top.",
   },
   {
     en: "fill out",
-    ru: "заполнять (форму, анкету)",
+    ru: "заполнять (форму; анкету)",
     part_of_speech: "v",
     pronunciation: "",
     example: "Please fill out the form completely.",
@@ -632,7 +632,7 @@ export const phrasePopularVerb = [
   },
   {
     en: "get on",
-    ru: "садиться на (в), ладить",
+    ru: "садиться на, ладить",
     part_of_speech: "v",
     pronunciation: "",
     example: "Get on the train before the doors close.",
@@ -702,7 +702,7 @@ export const phrasePopularVerb = [
   },
   {
     en: "give up",
-    ru: "сдаться, бросить (привычку, занятие)",
+    ru: "сдаться, бросить (привычку; занятие)",
     part_of_speech: "v",
     pronunciation: "",
     example: "She never gives up when things get difficult.",
