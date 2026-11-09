@@ -11,7 +11,34 @@ const { default: component } = await server.ssrLoadModule('/src/components/QuizQ
 const { default: settingsComponent } = await server.ssrLoadModule('/src/components/QuizSettings.vue')
 const {wordKey, readLearningData, writeLearningData} = await server.ssrLoadModule('/src/quiz-storage.js')
 const {allWords} = await server.ssrLoadModule('/src/data/words/index.js')
+const {detectLocale, translate, localizeMessage, locale} = await server.ssrLoadModule('/src/i18n.js')
 after(() => server.close())
+
+test('interface locale follows browser language and falls back to English', () => {
+  for (const language of ['ru', 'ru-RU', 'RU-ru']) assert.equal(detectLocale(language), 'ru')
+  for (const language of ['en-US', 'fr-FR', '', undefined]) assert.equal(detectLocale(language), 'en')
+  assert.equal(translate('Start', 'ru'), 'Начать')
+  assert.equal(translate('Start', 'en'), 'Start')
+  assert.equal(translate('unknown', 'ru'), 'unknown')
+})
+
+test('switching language updates dynamic options and existing feedback without resetting state', () => {
+  const originalLocale = locale.value
+  const settings = { selectedQuiz: 'words', favorites: {}, mistakes: {} }
+  try {
+    locale.value = 'ru'
+    assert.equal(settingsComponent.computed.itemsQuiz()[0].name, 'Слова')
+    assert.equal(settingsComponent.computed.filterOptions.call(settings)[0].title, 'Все выбранные слова')
+    assert.equal(localizeMessage('Incorrect. Correct: <strong>book</strong>'), 'Неверно. Правильный ответ: <strong>book</strong>')
+    locale.value = 'en'
+    assert.equal(settingsComponent.computed.itemsQuiz()[0].name, 'Words')
+    assert.equal(settingsComponent.computed.filterOptions.call(settings)[0].title, 'All selected words')
+    assert.equal(localizeMessage('Неверно. Правильный ответ: <strong>book</strong>'), 'Incorrect. Correct: <strong>book</strong>')
+    assert.equal(localizeMessage('Глагол: <strong>go</strong>'), 'Verb: <strong>go</strong>')
+  } finally {
+    locale.value = originalLocale
+  }
+})
 
 function createQuiz() {
   const quiz = {
@@ -253,6 +280,29 @@ test('favorite and difficult filters are passed through settings', () => {
   settings.wordFilter = 'favorites'
   settingsComponent.methods.startQuiz.call(settings)
   assert.equal(emitted.at(-1)[1].wordFilter, 'favorites')
+})
+
+test('study filters only offer available categories for the selected quiz type', () => {
+  const word = wordKey({ en: 'book', ru: 'книга' }, 'words')
+  const verb = wordKey({ infinitive: 'go', past: 'went', past_participle: 'gone', translation: 'идти' }, 'verbs')
+  const settings = { selectedQuiz: 'words', favorites: {}, mistakes: {} }
+  const values = () => settingsComponent.computed.filterOptions.call(settings).map(option => option.value)
+  assert.deepEqual(values(), ['all'])
+  settings.mistakes[word] = 1
+  assert.deepEqual(values(), ['all'])
+  settings.favorites[word] = true
+  assert.deepEqual(values(), ['all', 'favorites'])
+  settings.mistakes[word] = 2
+  assert.deepEqual(values(), ['all', 'favorites', 'difficult'])
+  settings.selectedQuiz = 'verbs'
+  assert.deepEqual(values(), ['all'])
+  settings.mistakes[verb] = 2
+  assert.deepEqual(values(), ['all', 'difficult'])
+  settings.wordFilter = 'favorites'
+  settingsComponent.watch.filterOptions.call(settings, settingsComponent.computed.filterOptions.call(settings))
+  assert.equal(settings.wordFilter, 'all')
+  settings.selectedQuiz = 'random'
+  assert.deepEqual(values(), ['all', 'favorites', 'difficult'])
 })
 
 test('quiz state restores an incorrect attempt without counting it again', () => {

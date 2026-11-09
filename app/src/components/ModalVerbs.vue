@@ -8,7 +8,7 @@
 
       <v-toolbar color="teal" dark>
         <v-toolbar-title>
-          Table of modal verbs
+          {{ $t('Table of modal verbs') }}
         </v-toolbar-title>
 
         <v-spacer />

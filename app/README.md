@@ -39,6 +39,11 @@ This section covers how to start the development server and build your project f
 
 ### Learning tools
 
+The interface language initially follows the browser's preferred language: Russian for
+Russian locales and English otherwise. The RU/EN button in the header changes the
+language and remembers the selection in the browser. Vocabulary and grammar reference content
+are learning materials and are not automatically translated.
+
 Mark a word with the star during a quiz or while studying cards. In quiz settings,
 choose favorites or difficult words (at least two recorded mistakes), optionally
 select units, and enable study cards. Use the speaker button on each card to

@@ -4,8 +4,8 @@
       <v-card class="progress-card mb-4" rounded="lg" variant="tonal" color="teal">
         <v-card-text class="pa-4 d-flex align-center justify-space-between">
           <div>
-            <div class="text-caption text-medium-emphasis">STUDY CARDS</div>
-            <div class="text-body-1 font-weight-medium">Review words before the quiz</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('STUDY CARDS') }}</div>
+            <div class="text-body-1 font-weight-medium">{{ $t('Review words before the quiz') }}</div>
           </div>
           <v-chip size="small" variant="flat" color="teal">
             {{ studyIndex + 1 }} / {{ studyWords.length }}
@@ -16,22 +16,22 @@
       <v-card class="study-card mb-4" rounded="lg" elevation="2">
         <v-card-text class="text-center pa-5 pa-sm-7">
           <div class="study-heading">
-            <div class="text-caption text-medium-emphasis">ENGLISH</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('ENGLISH') }}</div>
             <v-btn class="study-favorite"
               :icon="isFavorite(studyWords[studyIndex]) ? 'mdi-star' : 'mdi-star-outline'"
-              :aria-label="isFavorite(studyWords[studyIndex]) ? 'Remove from favorites' : 'Add to favorites'"
+              :aria-label="$t(isFavorite(studyWords[studyIndex]) ? 'Remove from favorites' : 'Add to favorites')"
               color="teal" variant="text" @click="$emit('toggle-favorite', studyWords[studyIndex])" />
           </div>
           <div class="study-english mt-2">
             <div class="study-word text-h5 font-weight-bold">{{ studyWordEnglish }}</div>
-            <v-btn icon="mdi-volume-high" aria-label="Listen to English"
+            <v-btn icon="mdi-volume-high" :aria-label="$t('Listen to English')"
               color="teal" variant="text" @click="speakEnglish(studyWords[studyIndex])" />
           </div>
           <v-divider class="my-4" />
-          <div class="text-caption text-medium-emphasis">TRANSLATION</div>
+          <div class="text-caption text-medium-emphasis">{{ $t('TRANSLATION') }}</div>
           <div class="study-word text-h6 mt-2">{{ studyWordRussian }}</div>
           <v-alert v-if="speechError" class="mt-3" type="warning" variant="tonal" density="comfortable">
-            {{ speechError }}
+            {{ $localizeMessage(speechError) }}
           </v-alert>
         </v-card-text>
       </v-card>
@@ -40,18 +40,18 @@
         <v-col cols="6">
           <v-btn block rounded="lg" variant="outlined" color="teal"
             :disabled="studyIndex === 0" @click="changeStudyIndex(-1)">
-            Previous
+            {{ $t('Previous') }}
           </v-btn>
         </v-col>
         <v-col cols="6">
           <v-btn block rounded="lg" variant="outlined" color="teal"
             :disabled="studyIndex >= studyWords.length - 1" @click="changeStudyIndex(1)">
-            Next
+            {{ $t('Next') }}
           </v-btn>
         </v-col>
       </v-row>
       <v-btn block size="large" color="teal" rounded="lg" class="quiz-action" @click="startStudiedQuiz">
-        Start quiz
+        {{ $t('Start quiz') }}
       </v-btn>
     </div>
     <div v-else-if="!isBtnResetQuiz">
@@ -59,9 +59,9 @@
         <v-card-text class="pa-4">
           <div class="d-flex align-center justify-space-between mb-3">
             <div>
-              <div class="text-caption text-medium-emphasis">LEARNING PROGRESS</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('LEARNING PROGRESS') }}</div>
               <div class="text-body-1 font-weight-medium">
-                {{ stats.correct }} of {{ stats.total }} learned
+                {{ stats.correct }} {{ $t('of') }} {{ stats.total }} {{ $t('learned') }}
               </div>
             </div>
             <v-chip size="small" variant="flat" color="teal">
@@ -79,14 +79,14 @@
       </v-card>
 
       <div class="d-flex align-center justify-space-between mb-4">
-        <p class="mb-0 text-h5">How is the word translated?</p>
+        <p class="mb-0 text-h5">{{ $t('How is the word translated?') }}</p>
         <v-btn
           v-if="helper !== null"
           icon="mdi-information-outline"
           size="small"
           color="primary"
           variant="text"
-          aria-label="Show hint"
+          :aria-label="$t('Show hint')"
           @click="dialog = true"
         />
       </div>
@@ -95,12 +95,12 @@
         <template v-slot:default="{ isActive }">
           <v-card rounded="lg">
             <v-card-title class="d-flex justify-space-between align-center">
-              <div class="text-h5 text-medium-emphasis ps-2">Helper</div>
+              <div class="text-h5 text-medium-emphasis ps-2">{{ $t('Helper') }}</div>
               <v-btn icon="mdi-close" variant="text" @click="isActive.value = false"></v-btn>
             </v-card-title>
             <v-divider class="mb-4"></v-divider>
             <v-card-text>
-              <div class="text-medium-emphasis mb-4" v-html="helper"></div>
+              <div class="text-medium-emphasis mb-4" v-html="$localizeMessage(helper)"></div>
             </v-card-text>
           </v-card>
         </template>
@@ -118,7 +118,7 @@
         </h2>
         <v-btn
           :icon="isFavorite(currentWord) ? 'mdi-star' : 'mdi-star-outline'"
-          :aria-label="isFavorite(currentWord) ? 'Remove from favorites' : 'Add to favorites'"
+          :aria-label="$t(isFavorite(currentWord) ? 'Remove from favorites' : 'Add to favorites')"
           color="teal"
           size="small"
           variant="text"
@@ -157,7 +157,7 @@
         <v-text-field
           v-model="userAnswer"
           clearable
-          label="Enter your answer"
+          :label="$t('Enter your answer')"
           variant="outlined"
           density="comfortable"
           color="teal"
@@ -172,7 +172,7 @@
         <v-text-field
           v-model="answeredFeedback"
           disabled
-          label="Your answer"
+          :label="$t('Your answer')"
           variant="outlined"
           density="comfortable"
           color="teal"
@@ -188,7 +188,7 @@
         variant="tonal"
         rounded="lg"
       >
-        <div v-html="feedback"></div>
+        <div v-html="$localizeMessage(feedback)"></div>
         <v-btn
           v-if="typeCorrect === 'error'"
           class="mt-2"
@@ -198,12 +198,12 @@
           prepend-icon="mdi-volume-high"
           @click="speakCorrectAnswer"
         >
-          Listen to English
+          {{ $t('Listen to English') }}
         </v-btn>
       </v-alert>
 
       <v-alert v-if="speechError" class="mb-4" type="warning" variant="tonal" density="comfortable">
-        {{ speechError }}
+        {{ $localizeMessage(speechError) }}
       </v-alert>
 
       <v-btn
@@ -216,7 +216,7 @@
         :disabled="mode === 'manual' && !userAnswer.trim()"
         @click="checkAnswer"
       >
-        Check answer
+        {{ $t('Check answer') }}
       </v-btn>
 
       <v-btn
@@ -229,7 +229,7 @@
         @click="nextWord"
         ref="continueBtn"
       >
-        Continue
+        {{ $t('Continue') }}
         <v-icon end>mdi-arrow-right</v-icon>
       </v-btn>
     </div>
@@ -240,8 +240,8 @@
           <v-avatar color="teal" variant="tonal" size="56" class="mb-3">
             <v-icon size="30">mdi-trophy-outline</v-icon>
           </v-avatar>
-          <div class="text-h5 font-weight-bold">Quiz complete</div>
-          <div class="text-body-2 text-medium-emphasis mt-1">Here is your result</div>
+          <div class="text-h5 font-weight-bold">{{ $t('Quiz complete') }}</div>
+          <div class="text-body-2 text-medium-emphasis mt-1">{{ $t('Here is your result') }}</div>
         </div>
 
         <div class="result-score">
@@ -254,7 +254,7 @@
           >
             <div class="text-h4 font-weight-bold">{{ resultPercentage }}%</div>
           </v-progress-circular>
-          <div class="text-body-2 text-medium-emphasis mt-3">Final score</div>
+          <div class="text-body-2 text-medium-emphasis mt-3">{{ $t('Final score') }}</div>
         </div>
 
         <v-divider class="my-5" />
@@ -262,19 +262,19 @@
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-value">{{ stats.correct }}</span>
-            <span class="stat-label">Correct</span>
+            <span class="stat-label">{{ $t('Correct') }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-value">{{ stats.incorrect }}</span>
-            <span class="stat-label">Mistakes</span>
+            <span class="stat-label">{{ $t('Mistakes') }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-value">{{ stats.attempt }}</span>
-            <span class="stat-label">Attempts</span>
+            <span class="stat-label">{{ $t('Attempts') }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-value">{{ spentTime }}</span>
-            <span class="stat-label">Time</span>
+            <span class="stat-label">{{ $t('Time') }}</span>
           </div>
         </div>
 
@@ -282,18 +282,18 @@
           <v-col v-if="mistakenWords.length" cols="12">
             <v-btn block size="large" color="teal" rounded="lg" @click="reviewMistakes">
               <v-icon start>mdi-repeat</v-icon>
-              Review mistakes ({{ mistakenWords.length }})
+              {{ $t('Review mistakes') }} ({{ mistakenWords.length }})
             </v-btn>
           </v-col>
           <v-col cols="12" sm="6">
             <v-btn block size="large" color="teal" rounded="lg" @click="restartQuiz">
               <v-icon start>mdi-refresh</v-icon>
-              Restart
+              {{ $t('Restart') }}
             </v-btn>
           </v-col>
           <v-col cols="12" sm="6">
             <v-btn block size="large" variant="outlined" color="teal" rounded="lg" @click="onReset">
-              New quiz
+              {{ $t('New quiz') }}
             </v-btn>
           </v-col>
         </v-row>
@@ -303,19 +303,19 @@
     <div v-if="!isBtnResetQuiz && !studying" class="quiz-stats mt-4">
       <v-chip size="small" variant="tonal" color="teal">
         <v-icon start size="small">mdi-check-circle-outline</v-icon>
-        {{ stats.correct }} correct
+        {{ stats.correct }} {{ $t('correct') }}
       </v-chip>
       <v-chip size="small" variant="tonal" color="error">
         <v-icon start size="small">mdi-close-circle-outline</v-icon>
-        {{ stats.incorrect }} mistakes
+        {{ stats.incorrect }} {{ $t('mistakes') }}
       </v-chip>
       <v-chip size="small" variant="tonal">
         <v-icon start size="small">mdi-counter</v-icon>
-        {{ stats.attempt }} attempts
+        {{ stats.attempt }} {{ $t('attempts') }}
       </v-chip>
       <v-chip size="small" variant="tonal">
         <v-icon start size="small">mdi-counter</v-icon>
-        {{ stats.remained }} left
+        {{ stats.remained }} {{ $t('left') }}
       </v-chip>
     </div>
   </div>
@@ -325,6 +325,7 @@
 import {allWords} from '@/data/words'
 import {allIrregularVerbs} from '@/data/irregular-verbs'
 import {wordKey} from '@/quiz-storage'
+import {translate as t} from '@/i18n'
 
 export default {
   props: {
@@ -445,7 +446,7 @@ export default {
     },
     hint() {
       if (this.settings.quiz === 'verbs') {
-        return 'Use for the separator \' , \' in answer'
+        return t('Use for the separator \' , \' in answer')
       }
       return null
     },
@@ -570,6 +571,14 @@ export default {
       Object.assign(this, fields)
       this.usedIndexes = new Set(usedIndexes)
       this.startTime = new Date(Date.parse(startTime) + Date.now() - Date.parse(savedAt))
+      if (this.answerSubmitted && this.typeCorrect === 'error') {
+        this.feedback = `${t('Incorrect. Correct:')} <strong>${this.currentWordObj.correctAnswer}</strong>`
+      } else if (this.typeCorrect === 'warning') {
+        this.feedback = t('Enter the answer in the field')
+      }
+      if (this.settings.quiz === 'verbs' && this.helper) {
+        this.helper = t('Verb:') + ' <strong>' + this.currentWord?.infinitive + '</strong>'
+      }
       if (this.answerSubmitted && this.isCorrect && !this.studying) {
         this.nextWord()
       } else {
@@ -625,11 +634,11 @@ export default {
       this.answeredIsView = false;
       this.isCorrect = false;
       this.typeCorrect = 'error'
-      this.feedback = `Incorrect. Correct: <strong>${this.currentWordObj.correctAnswer}</strong>`;
+      this.feedback = `${t('Incorrect. Correct:')} <strong>${this.currentWordObj.correctAnswer}</strong>`;
 
       if (input.length === 0) {
         this.typeCorrect = 'warning'
-        this.feedback = 'Enter the answer in the field'
+        this.feedback = t('Enter the answer in the field')
         this.handlerButton(true, false, false)
         return
       }
@@ -646,7 +655,7 @@ export default {
         this.answeredIsView = false;
         this.isCorrect = true;
         this.typeCorrect = 'success'
-        this.feedback = 'Correct!'
+        this.feedback = t('Correct!')
 
         this.nextWordTimeout = setTimeout(() => {
           this.nextWordTimeout = null
@@ -696,7 +705,7 @@ export default {
       if (this.usedIndexes.size === this.listWords.length) {
         this.answerSubmitted = true
         this.isCorrect = true
-        this.feedback = "You have completed all the words!"
+        this.feedback = t('You have completed all the words!')
         this.calculateProgress()
         this.handlerButton(false, false, true)
         this.endTime = new Date()
@@ -735,7 +744,7 @@ export default {
       }
 
       if (this.settings.quiz === 'verbs') {
-        this.helper =  'Verb: <strong>' + this.currentWord?.infinitive + '</strong>';
+        this.helper =  t('Verb:') + ' <strong>' + this.currentWord?.infinitive + '</strong>';
       } else {
         this.helper = this.currentWord?.example || null;
       }
@@ -853,7 +862,7 @@ export default {
       this.speechError = ''
       if (typeof window.speechSynthesis?.speak !== 'function' ||
           typeof window.SpeechSynthesisUtterance !== 'function') {
-        this.speechError = 'Speech playback is not supported in this browser.'
+        this.speechError = t('Speech playback is not supported in this browser.')
         return
       }
 
@@ -863,7 +872,7 @@ export default {
       const utterance = new window.SpeechSynthesisUtterance(english)
       utterance.lang = 'en-US'
       utterance.onerror = () => {
-        this.speechError = 'Unable to play pronunciation. Check your browser and audio settings.'
+        this.speechError = t('Unable to play pronunciation. Check your browser and audio settings.')
       }
       window.speechSynthesis.speak(utterance)
     },

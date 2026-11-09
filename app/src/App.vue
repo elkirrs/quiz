@@ -15,6 +15,12 @@
         <h2>Word Quiz</h2>
         <v-spacer></v-spacer>
         <v-btn
+          variant="text"
+          size="small"
+          :aria-label="$t(locale === 'ru' ? 'Switch to English' : 'Switch to Russian')"
+          @click="toggleLanguage"
+        >{{ locale === 'ru' ? 'EN' : 'RU' }}</v-btn>
+        <v-btn
           :icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'"
           size="small"
           variant="text"
@@ -26,13 +32,16 @@
         <v-container>
           <div class="mx-auto" style="max-width: 500px;">
             <v-alert v-if="storageError" type="error" variant="tonal" class="mt-4" closable @click:close="storageError = ''">
-              {{ storageError }}
+              {{ localizeMessage(storageError) }}
+            </v-alert>
+            <v-alert v-if="languageError" type="warning" variant="tonal" class="mt-4" closable @click:close="languageError = ''">
+              {{ $t('Unable to save language preference.') }} {{ languageError }}
             </v-alert>
             <v-card v-if="!settings && learning.active" class="mt-4" variant="tonal" color="teal">
-              <v-card-text>Continue your unfinished quiz?</v-card-text>
+              <v-card-text>{{ $t('Continue your unfinished quiz?') }}</v-card-text>
               <v-card-actions>
-                <v-btn @click="resumeQuiz">Continue</v-btn>
-                <v-btn @click="discardQuiz">Start over</v-btn>
+                <v-btn @click="resumeQuiz">{{ $t('Continue') }}</v-btn>
+                <v-btn @click="discardQuiz">{{ $t('Start over') }}</v-btn>
               </v-card-actions>
             </v-card>
             <QuizSettings
@@ -62,15 +71,15 @@
             />
 
             <v-expansion-panels v-if="!settings && learning.history.length" class="mt-4">
-              <v-expansion-panel title="Quiz history">
+              <v-expansion-panel :title="$t('Quiz history')">
                 <v-expansion-panel-text>
                   <div v-for="day in historyByDay" :key="day.date" class="mb-2 text-body-2">
-                    {{ day.date }} · {{ day.count }} quizzes · average {{ day.average }}%
+                    {{ day.date }} · {{ day.count }} {{ $t('quizzes') }} · {{ $t('average') }} {{ day.average }}%
                   </div>
                   <v-divider class="my-3" />
                   <div v-for="result in learning.history.slice().reverse()" :key="result.id" class="mb-3">
                     <strong>{{ result.score }}%</strong> · {{ new Date(result.date).toLocaleString() }}
-                    <div class="text-body-2">{{ result.total }} words · {{ result.incorrect }} mistakes · {{ result.attempts }} attempts</div>
+                    <div class="text-body-2">{{ result.total }} {{ $t('words') }} · {{ result.incorrect }} {{ $t('mistakes') }} · {{ result.attempts }} {{ $t('attempts') }}</div>
                   </div>
                 </v-expansion-panel-text>
               </v-expansion-panel>
@@ -105,12 +114,12 @@
 
           <v-dialog v-model="dialog" max-width="400">
             <v-card>
-              <v-card-title class="text-h6">Reset Quiz</v-card-title>
-              <v-card-text>Are you sure you want to reset all quiz settings?</v-card-text>
+              <v-card-title class="text-h6">{{ $t('Reset Quiz') }}</v-card-title>
+              <v-card-text>{{ $t('Are you sure you want to reset all quiz settings?') }}</v-card-text>
               <v-card-actions>
                 <v-spacer/>
-                <v-btn color="primary" text @click="dialog = false">Cancel</v-btn>
-                <v-btn color="red" text @click="confirmReset">Reset</v-btn>
+                <v-btn color="primary" text @click="dialog = false">{{ $t('Cancel') }}</v-btn>
+                <v-btn color="red" text @click="confirmReset">{{ $t('Reset') }}</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -187,13 +196,30 @@
 </template>
 
 <script setup>
-import {computed, shallowRef, watch, ref} from 'vue'
+import {computed, inject, shallowRef, watch, ref} from 'vue'
+import {useLocale} from 'vuetify'
 import {readLearningData, writeLearningData, wordKey} from '@/quiz-storage'
+import {locale, translate as t, localizeMessage, LANGUAGE_STORAGE_KEY} from '@/i18n'
 import logoLight from '@/assets/logo.png'
 import logoDark from '@/assets/logoD.png'
 
 const theme = ref('light')
 provide('theme', theme)
+const languageError = ref(inject('languageStorageError', ''))
+const {current: vuetifyLocale} = useLocale()
+watch(locale, value => {
+  vuetifyLocale.value = value
+  document.documentElement.lang = value
+}, {immediate: true})
+function toggleLanguage() {
+  locale.value = locale.value === 'ru' ? 'en' : 'ru'
+  try {
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, locale.value)
+    languageError.value = ''
+  } catch (error) {
+    languageError.value = error.message
+  }
+}
 
 const learning = ref({ favorites: {}, mistakes: {}, history: [], active: null })
 const storageError = ref('')
@@ -202,7 +228,7 @@ try {
   learning.value = readLearningData(window.localStorage)
 } catch (error) {
   storageReadable = false
-  storageError.value = `Unable to load saved learning data: ${error.message}`
+  storageError.value = `${t('Unable to load saved learning data:')} ${t(error.message)}`
 }
 const resumeState = ref(null)
 const historyByDay = computed(() => {
@@ -220,13 +246,13 @@ const historyByDay = computed(() => {
 })
 function persist() {
   if (!storageReadable) {
-    storageError.value = 'Saved learning data could not be loaded and will not be overwritten.'
+    storageError.value = t('Saved learning data could not be loaded and will not be overwritten.')
     return
   }
   try {
     writeLearningData(window.localStorage, learning.value)
   } catch (error) {
-    storageError.value = `Unable to save learning data: ${error.message}`
+    storageError.value = `${t('Unable to save learning data:')} ${error.message}`
   }
 }
 function toggleFavorite(word) {

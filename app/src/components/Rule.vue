@@ -2,7 +2,7 @@
   <v-dialog v-model="dialogModel" fullscreen>
     <v-card>
       <v-toolbar color="teal" dark>
-        <v-toolbar-title>Table of all tenses of the English language</v-toolbar-title>
+        <v-toolbar-title>{{ $t('Table of all tenses of the English language') }}</v-toolbar-title>
         <v-spacer/>
         <v-btn icon @click="dialogModel = false">
           <v-icon>mdi-close</v-icon>
@@ -41,7 +41,7 @@
                   <v-tabs-window-item value="option-1">
                     <v-card flat>
                       <v-card-text>
-                        <p class="font-weight-bold pb-3">Пример:</p>
+                        <p class="font-weight-bold pb-3">{{ $t('Example:') }}</p>
                         <div v-for="ruleItem in item.rule">
                           <p v-html="ruleItem.en" class="text-wrap break-word font-weight-bold"></p>
                           <p class="text-wrap break-word">{{ ruleItem.ru }}</p>
@@ -53,7 +53,7 @@
                   <v-tabs-window-item value="option-2">
                     <v-card flat>
                       <v-card-text>
-                        <p class="font-weight-bold pb-3">Схема:</p>
+                        <p class="font-weight-bold pb-3">{{ $t('Structure:') }}</p>
                         <div>
                           <v-table density="compact">
                             <tbody>
@@ -78,7 +78,7 @@
                   <v-tabs-window-item value="option-3">
                     <v-card flat>
                       <v-card-text>
-                        <p class="font-weight-bold pb-3">Правила:</p>
+                        <p class="font-weight-bold pb-3">{{ $t('Rules:') }}</p>
                         <p v-for="(use) in item.use">
                           {{ use.text }}
                         </p>
@@ -89,7 +89,7 @@
                   <v-tabs-window-item value="option-4">
                     <v-card flat>
                       <v-card-text>
-                        <p class="font-weight-bold pb-3">Маркеры:</p>
+                        <p class="font-weight-bold pb-3">{{ $t('Markers:') }}</p>
                         <p>
                           {{ item.markers }}
                         </p>

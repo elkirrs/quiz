@@ -2,7 +2,7 @@
   <v-dialog v-model="dialogModel" fullscreen>
     <v-card>
       <v-toolbar color="teal" dark>
-        <v-toolbar-title>Word list</v-toolbar-title>
+        <v-toolbar-title>{{ $t('Word list') }}</v-toolbar-title>
 
         <v-btn icon v-if="!showSearch" @click="showSearch = true">
           <v-icon>mdi-magnify</v-icon>
@@ -12,7 +12,7 @@
           v-if="showSearch"
           v-model="search"
           ref="searchInput"
-          placeholder="Search"
+          :placeholder="$t('Search')"
           prepend-inner-icon="mdi-magnify"
           clearable
           hide-details
@@ -69,7 +69,7 @@
           </v-card>
 
           <div v-if="!filteredWords.length" class="text-center pa-4">
-            No words found
+            {{ $t('No words found') }}
           </div>
 
           <v-pagination
@@ -103,12 +103,28 @@ export default {
     return {
       showSearch: false,
       search: '',
-      headers: [],
       mobilePage: 1,
       mobilePageSize: 20,
     };
   },
   computed: {
+    headers() {
+      if (!this.words.length) return []
+      return Object.keys(this.words[0]).map(key => {
+        let width = '120px'
+        if (key === 'en') width = '200px'
+        if (key === 'ru') width = '350px'
+        if (key === 'example') width = '400px'
+        return {
+          title: this.humanize(key),
+          key,
+          sortable: true,
+          align: 'start',
+          headerProps: { style: `width: ${width}; min-width: ${width}; max-width: ${width};` },
+          cellProps: { style: `width: ${width}; min-width: ${width}; max-width: ${width}; white-space: normal;` }
+        }
+      })
+    },
     dialogModel: {
       get() {
         return this.dialog;
@@ -164,34 +180,8 @@ export default {
       this.mobilePage = 1
     },
     words: {
-      handler(newWords) {
+      handler() {
         this.mobilePage = 1
-        if (newWords.length > 0) {
-          this.headers = Object.keys(newWords[0]).map(key => {
-            let width = '120px' // значение по умолчанию
-
-            // для некоторых полей делаем шире
-            if (['en'].includes(key)) {
-              width = '200px'
-            }
-            if (['ru'].includes(key)) {
-              width = '350px'
-            }
-
-            if (['example'].includes(key)) {
-              width = '400px'
-            }
-
-            return {
-              title: this.humanize(key),
-              key: key,
-              sortable: true,
-              align: 'start',
-              headerProps: { style: `width: ${width}; min-width: ${width}; max-width: ${width};` },
-              cellProps: { style: `width: ${width}; min-width: ${width}; max-width: ${width}; white-space: normal;` }
-            }
-          })
-        }
       },
       immediate: true,
     },
@@ -220,7 +210,7 @@ export default {
       )
     },
     humanize(str) {
-      return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      return this.$t(str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
     },
     onBlur() {
       if (!this.search) this.showSearch = false;

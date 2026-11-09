@@ -7,7 +7,7 @@
       item-title="name"
       item-value="code"
       :density="settings.density"
-      label="Choose quiz"
+      :label="$t('Choose quiz')"
       :variant="settings.variant"
       :color="settings.color"
     >
@@ -29,7 +29,7 @@
       :items="itemsLevel"
       item-title="name"
       item-value="code"
-      label="Choose Level"
+      :label="$t('Choose Level')"
       multiple
       :density="settings.density"
       persistent-hint
@@ -43,7 +43,7 @@
             color="teal"
             label
           >
-            <span>{{ levels.length }} selected</span>
+            <span>{{ levels.length }} {{ $t('selected') }}</span>
           </v-chip>
 
         </template>
@@ -68,7 +68,7 @@
       :items="itemsUnit"
       item-title="name"
       item-value="code"
-      label="Choose Unit"
+      :label="$t('Choose Unit')"
       multiple
       :density="settings.density"
       persistent-hint
@@ -82,7 +82,7 @@
             color="teal"
             label
           >
-            <span>{{ units.length }} selected  | {{ countWords }}</span>
+            <span>{{ units.length }} {{ $t('selected') }} | {{ countWords }}</span>
           </v-chip>
 
         </template>
@@ -106,7 +106,7 @@
       :items="itemsVerbs"
       item-title="name"
       item-value="code"
-      label="Choose Unit"
+      :label="$t('Choose Unit')"
       multiple
       :density="settings.density"
       persistent-hint
@@ -120,7 +120,7 @@
             color="teal"
             label
           >
-            <span>{{ verbs.length }} selected | {{ countWords }}</span>
+            <span>{{ verbs.length }} {{ $t('selected') }} | {{ countWords }}</span>
           </v-chip>
 
         </template>
@@ -145,7 +145,7 @@
       item-title="name"
       item-value="code"
       :density="settings.density"
-      label="Choose the directory of the translation of words"
+      :label="$t('Choose the directory of the translation of words')"
       :variant="settings.variant"
       :color="settings.color"
     >
@@ -167,7 +167,7 @@
       item-title="name"
       item-value="code"
       :density="settings.density"
-      label="Choose mode"
+      :label="$t('Choose mode')"
       :variant="settings.variant"
       :color="settings.color"
     >
@@ -186,7 +186,7 @@
       v-if="xs && selectedMod === 'list' && (selectedQuiz === 'words' || selectedQuiz === 'random')"
       :model-value="mobileAnswerOptions"
       :density="settings.density"
-      label="Number of answer options"
+      :label="$t('Number of answer options')"
       :variant="settings.variant"
       :color="settings.color"
       readonly
@@ -196,7 +196,7 @@
           icon="mdi-minus"
           size="small"
           variant="text"
-          aria-label="Decrease answer options"
+          :aria-label="$t('Decrease answer options')"
           :disabled="mobileAnswerOptions <= 4"
           @click="mobileAnswerOptions--"
         />
@@ -206,7 +206,7 @@
           icon="mdi-plus"
           size="small"
           variant="text"
-          aria-label="Increase answer options"
+          :aria-label="$t('Increase answer options')"
           :disabled="mobileAnswerOptions >= 10"
           @click="mobileAnswerOptions++"
         />
@@ -214,11 +214,12 @@
     </v-text-field>
 
     <v-select
+      v-if="filterOptions.length > 1"
       v-model="wordFilter"
       :items="filterOptions"
       item-title="title"
       item-value="value"
-      label="Words to study"
+      :label="$t('Words to study')"
       :density="settings.density"
       :variant="settings.variant"
       :color="settings.color"
@@ -234,11 +235,9 @@
       </template>
     </v-select>
 
-    <v-switch v-model="studyFirst" label="Study cards before the quiz" :color="settings.color" />
-
     <div v-if="selectedQuiz === 'random' && sliderShow">
       <div class="text-caption">
-        Count words: {{ sliderValue }}
+        {{ $t('Count words') }}: {{ sliderValue }}
       </div>
       <v-slider
         v-model="sliderValue"
@@ -272,12 +271,8 @@
       </v-slider>
     </div>
 
-    <v-switch
-      class="mt-n5"
-      v-model="checkbox"
-      label="Until the last mistake"
-      :color="settings.color"
-    ></v-switch>
+    <v-switch v-model="studyFirst" :label="$t('Study cards before the quiz')" :color="settings.color" density="compact" hide-details />
+    <v-switch v-model="checkbox" :label="$t('Until the last mistake')" :color="settings.color" density="compact" hide-details />
 
     <v-snackbar
       v-model="snackbar.show"
@@ -286,16 +281,16 @@
       location="top right"
       border="start"
     >
-      {{ snackbar.text }}
+      {{ $t(snackbar.text) }}
     </v-snackbar>
 
     <v-btn
-      class="mt-n5"
+      class="mt-2"
       block
       :size="settings.btnSizeStart"
       :color="settings.color"
       @click="startQuiz"
-    >Start
+    >{{ $t('Start') }}
     </v-btn>
   </div>
 
@@ -307,6 +302,7 @@ import {allIrregularVerbs, mapUnit as mapVerbUnit} from '@/data/irregular-verbs'
 import {app} from '@/data/const.js'
 import {useDisplay} from 'vuetify'
 import {wordKey} from '@/quiz-storage'
+import {translate as t} from '@/i18n'
 
 export default {
   name: 'QuizSettings',
@@ -335,11 +331,6 @@ export default {
     selectedMod: app.settings.default.mod,
     mobileAnswerOptions: 4,
     wordFilter: 'all',
-    filterOptions: [
-      {title: 'All selected words', value: 'all'},
-      {title: 'Favorites', value: 'favorites'},
-      {title: 'Difficult words (2+ mistakes)', value: 'difficult'},
-    ],
     studyFirst: false,
 
     sliderValue: 50,
@@ -349,32 +340,38 @@ export default {
     sliderShow: true,
     countWords: 0,
 
-    itemsQuiz: app.settings.itemsQuiz,
-    itemsTrans: app.settings.itemsTrans,
-    itemsMods: app.settings.itemsMods,
-
-    itemsLevel: [],
-
     levels: [],
     units: [],
     verbs: [],
 
   }),
-  created() {
-    const itemLevels = [];
-
-    Object.keys(mapLevel).forEach((idx) => {
-      itemLevels.push({
-        name: mapLevel[idx],
-        code: idx
-      })
-    })
-    this.itemsLevel = itemLevels
-  },
   mounted() {
     this.loadAllWords()
   },
   computed: {
+    itemsQuiz() {
+      return app.settings.itemsQuiz.map(item => ({...item, name: t(item.name)}))
+    },
+    itemsTrans() {
+      return app.settings.itemsTrans.map(item => ({...item, name: t(item.name)}))
+    },
+    itemsMods() {
+      return app.settings.itemsMods.map(item => ({...item, name: t(item.name)}))
+    },
+    itemsLevel() {
+      return Object.keys(mapLevel).map(code => ({name: t(mapLevel[code]), code}))
+    },
+    filterOptions() {
+      const prefix = this.selectedQuiz === 'verbs' ? '["verbs",' : '["words",'
+      const options = [{title: t('All selected words'), value: 'all'}]
+      if (Object.entries(this.favorites).some(([key, favorite]) => key.startsWith(prefix) && favorite)) {
+        options.push({title: t('Favorites'), value: 'favorites'})
+      }
+      if (Object.entries(this.mistakes).some(([key, count]) => key.startsWith(prefix) && count >= 2)) {
+        options.push({title: t('Difficult words (2+ mistakes)'), value: 'difficult'})
+      }
+      return options
+    },
     itemsUnit() {
       const units = [];
 
@@ -383,7 +380,7 @@ export default {
         if (unitMap) {
           Object.keys(unitMap).forEach((unitKey) => {
             units.push({
-              name: `${unitKey.replace(/_/g, ' ')} (${mapLevel[level]}) | ${allWords[level][unitKey].length}`,
+              name: `${t(unitKey.replace(/_/g, ' ')).replace(/^Unit /, `${t('Unit')} `)} (${t(mapLevel[level])}) | ${allWords[level][unitKey].length}`,
               code: `${level}/${unitKey}`
             });
           });
@@ -397,7 +394,7 @@ export default {
 
       Object.entries(allIrregularVerbs).forEach((item) => {
         units.push({
-          name: `${mapVerbUnit[item[0]]} | ${item[1].length}`,
+          name: `${t(mapVerbUnit[item[0]])} | ${item[1].length}`,
           code: `${item[0]}`
         });
       });
@@ -525,6 +522,11 @@ export default {
     }
   },
   watch: {
+    filterOptions(options) {
+      if (!options.some(option => option.value === this.wordFilter)) {
+        this.wordFilter = 'all'
+      }
+    },
     units: {
       handler(newUnits) {
         if (!newUnits.length && !this.verbs.length && !this.levels.length) {

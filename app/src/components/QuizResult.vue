@@ -2,7 +2,7 @@
   <v-dialog v-model="dialogModel" fullscreen>
     <v-card>
       <v-toolbar color="teal" dark>
-        <v-toolbar-title>Answer Result</v-toolbar-title>
+        <v-toolbar-title>{{ $t('Answer Result') }}</v-toolbar-title>
 
         <v-btn icon v-if="!showSearch" @click="showSearch = true">
           <v-icon>mdi-magnify</v-icon>
@@ -12,7 +12,7 @@
           v-if="showSearch"
           v-model="search"
           ref="searchInput"
-          placeholder="Search"
+          :placeholder="$t('Search')"
           prepend-inner-icon="mdi-magnify"
           clearable
           hide-details
@@ -67,21 +67,21 @@
             </v-card-title>
             <v-card-text>
               <div class="answer-field">
-                <strong>Correct answer:</strong>
+                <strong>{{ $t('Correct answer') }}:</strong>
                 <span>{{ answer.correctAnswer }}</span>
               </div>
               <div class="answer-field">
-                <strong>Your answer:</strong>
+                <strong>{{ $t('Your answer') }}:</strong>
                 <span>{{ answer.userAnswer }}</span>
               </div>
               <div class="answer-status" :class="answer.isCorrect ? 'text-green' : 'text-red'">
-                {{ answer.isCorrect ? '✔️ Correct' : '❌ Incorrect' }}
+                {{ answer.isCorrect ? '✔️' : '❌' }} {{ $t(answer.isCorrect ? 'Correct' : 'Incorrect') }}
               </div>
             </v-card-text>
           </v-card>
 
           <div v-if="!filteredAnswers.length" class="text-center pa-4">
-            No answers found
+            {{ $t('No answers found') }}
           </div>
 
           <v-pagination
@@ -113,12 +113,6 @@ export default {
       search: '',
       mobilePage: 1,
       mobilePageSize: 20,
-      headers: [
-        { title: 'Question', key: 'question', sortable: true },
-        { title: 'Correct Answer', key: 'correctAnswer', sortable: true },
-        { title: 'Your Answer', key: 'userAnswer', sortable: true },
-        { title: 'Correct', key: 'isCorrect', sortable: true }
-      ]
     }
   },
   mounted() {
@@ -128,6 +122,14 @@ export default {
     window.removeEventListener('keydown', this.handleHotkey);
   },
   computed: {
+    headers() {
+      return [
+        { title: this.$t('Question'), key: 'question', sortable: true },
+        { title: this.$t('Correct answer'), key: 'correctAnswer', sortable: true },
+        { title: this.$t('Your answer'), key: 'userAnswer', sortable: true },
+        { title: this.$t('Correct'), key: 'isCorrect', sortable: true }
+      ]
+    },
     dialogModel: {
       get() {
         return this.dialog;
