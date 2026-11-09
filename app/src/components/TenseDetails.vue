@@ -1,0 +1,88 @@
+<template>
+  <div class="tense-details">
+    <div class="detail-controls" role="group" :aria-label="$t('Tense details')">
+      <v-tooltip v-for="option in options" :key="option.value" :text="$t(option.label)" location="bottom">
+        <template #activator="{ props: tooltipProps }">
+          <v-btn
+            v-bind="tooltipProps"
+            :icon="option.icon"
+            :variant="tab === option.value ? 'tonal' : 'text'"
+            color="teal"
+            :aria-label="$t(option.label)"
+            :aria-pressed="tab === option.value"
+            size="small"
+            @click="tab = option.value"
+          />
+        </template>
+      </v-tooltip>
+    </div>
+    <div class="detail-heading text-caption text-medium-emphasis">{{ $t(activeLabel) }}</div>
+
+    <v-window v-model="tab">
+      <v-window-item value="examples">
+        <div v-for="form in forms" :key="form" class="tense-entry">
+          <div class="text-caption text-medium-emphasis">{{ $t(formLabels[form]) }}</div>
+          <div class="font-weight-medium" lang="en" v-html="item.examples[form].en"></div>
+          <div v-if="locale === 'ru'" class="text-body-2">{{ item.examples[form].ru }}</div>
+        </div>
+      </v-window-item>
+
+      <v-window-item value="formula">
+        <div v-for="(form, index) in forms" :key="form" class="tense-entry">
+          <div class="text-caption text-medium-emphasis">{{ $t(formLabels[form]) }}</div>
+          <div class="font-weight-medium formula" lang="en">{{ item.formulas[index] }}</div>
+        </div>
+        <p class="text-caption text-medium-emphasis mt-3">{{ $t('Subject is the person or thing doing the action; V is the base verb; V₂ is the past form; V₃ is the past participle; V-ing is the -ing form. Choose the auxiliary verb to match the subject.') }}</p>
+        <p v-if="item.aspect === 'Simple'" class="text-caption text-medium-emphasis mt-1">
+          {{ $t('Simple formulas are for ordinary verbs; be forms negatives and questions differently.') }}
+        </p>
+        <p v-if="item.name === 'Present Simple'" class="text-caption text-medium-emphasis mt-1">
+          {{ $t('Use the -s or -es form with he, she and it.') }}
+        </p>
+      </v-window-item>
+
+      <v-window-item value="usage">
+        <ul class="tense-usage">
+          <li v-for="use in item.use[locale]" :key="use">{{ use }}</li>
+        </ul>
+      </v-window-item>
+
+      <v-window-item value="markers">
+        <p lang="en">{{ item.markers }}</p>
+        <p class="text-caption text-medium-emphasis mt-3">{{ $t('Markers are clues, not rules.') }}</p>
+      </v-window-item>
+    </v-window>
+  </div>
+</template>
+
+<script setup>
+import { computed, ref } from 'vue'
+import { locale } from '@/i18n'
+import { forms } from '@/data/tenseReference.js'
+
+defineProps({ item: { type: Object, required: true } })
+
+const tab = ref('examples')
+const formLabels = { positive: 'Affirmative', negative: 'Negative', question: 'Question' }
+const options = [
+  { value: 'examples', label: 'Examples', icon: 'mdi-format-quote-close' },
+  { value: 'formula', label: 'Formula', icon: 'mdi-function-variant' },
+  { value: 'usage', label: 'When to use', icon: 'mdi-book-open-variant' },
+  { value: 'markers', label: 'Markers', icon: 'mdi-tag-outline' },
+]
+const activeLabel = computed(() => options.find(option => option.value === tab.value).label)
+</script>
+
+<style scoped>
+.tense-details { min-width: 0; }
+.detail-controls { display: flex; gap: 4px; padding: 0 12px; }
+.detail-controls .v-btn { flex: 1; min-width: 0; height: 40px; }
+.detail-controls :deep(.v-theme--dark.v-btn) { color: #4db6ac !important; }
+.detail-controls :deep(.v-theme--dark.v-btn span) { color: inherit; }
+.detail-heading { padding: 8px 16px 0; }
+.tense-details :deep(.v-window-item) { padding: 8px 16px 16px; }
+.tense-entry + .tense-entry { margin-top: 12px; }
+.formula { overflow-wrap: anywhere; }
+.tense-usage { padding-left: 20px; }
+.tense-usage li + li { margin-top: 8px; }
+</style>
