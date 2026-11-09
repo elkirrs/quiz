@@ -37,6 +37,20 @@ These features are curated to provide a seamless development experience from set
 
 This section covers how to start the development server and build your project for production.
 
+### Learning tools
+
+Mark a word with the star during a quiz or while studying cards. In quiz settings,
+choose favorites or difficult words (at least two recorded mistakes), optionally
+select units, and enable study cards. Use the speaker button on each card to
+hear the English word or verb forms; speech playback requires browser support.
+If no units are selected, the favorites and
+difficult-word filters search all units of the selected quiz type.
+
+Favorites, mistake counts, completed quiz history, and unfinished quiz progress
+are stored locally in the browser. After reopening the app, choose whether to
+continue an unfinished quiz or start over. These data are not synchronized
+between devices and can be removed when browser site data are cleared.
+
 ### Starting the Development Server
 
 To start the development server with hot-reload, run the following command. The server will be accessible at [http://localhost:3000](http://localhost:3000):

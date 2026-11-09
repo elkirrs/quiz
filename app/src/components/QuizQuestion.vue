@@ -1,6 +1,57 @@
 <template>
   <div class="quiz-layout">
-    <div v-if="!isBtnResetQuiz">
+    <div v-if="studying">
+      <v-card class="progress-card mb-4" rounded="lg" variant="tonal" color="teal">
+        <v-card-text class="pa-4 d-flex align-center justify-space-between">
+          <div>
+            <div class="text-caption text-medium-emphasis">STUDY CARDS</div>
+            <div class="text-body-1 font-weight-medium">Review words before the quiz</div>
+          </div>
+          <v-chip size="small" variant="flat" color="teal">
+            {{ studyIndex + 1 }} / {{ studyWords.length }}
+          </v-chip>
+        </v-card-text>
+      </v-card>
+
+      <v-card class="study-card mb-4" rounded="lg" elevation="2">
+        <v-card-text class="text-center pa-5 pa-sm-7">
+          <div class="text-caption text-medium-emphasis">ENGLISH</div>
+          <div class="study-word text-h5 font-weight-bold mt-2">{{ studyWordEnglish }}</div>
+          <v-divider class="my-4" />
+          <div class="text-caption text-medium-emphasis">TRANSLATION</div>
+          <div class="study-word text-body-1 mt-2">{{ studyWordRussian }}</div>
+          <div class="d-flex justify-center mt-4">
+            <v-btn icon="mdi-volume-high" aria-label="Listen to English"
+              color="teal" variant="text" @click="speakEnglish(studyWords[studyIndex])" />
+            <v-btn :icon="isFavorite(studyWords[studyIndex]) ? 'mdi-star' : 'mdi-star-outline'"
+              :aria-label="isFavorite(studyWords[studyIndex]) ? 'Remove from favorites' : 'Add to favorites'"
+              color="teal" variant="text" @click="$emit('toggle-favorite', studyWords[studyIndex])" />
+          </div>
+          <v-alert v-if="speechError" class="mt-3" type="warning" variant="tonal" density="comfortable">
+            {{ speechError }}
+          </v-alert>
+        </v-card-text>
+      </v-card>
+
+      <v-row dense class="mb-2">
+        <v-col cols="6">
+          <v-btn block rounded="lg" variant="outlined" color="teal"
+            :disabled="studyIndex === 0" @click="changeStudyIndex(-1)">
+            Previous
+          </v-btn>
+        </v-col>
+        <v-col cols="6">
+          <v-btn block rounded="lg" variant="outlined" color="teal"
+            :disabled="studyIndex >= studyWords.length - 1" @click="changeStudyIndex(1)">
+            Next
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-btn block size="large" color="teal" rounded="lg" class="quiz-action" @click="startStudiedQuiz">
+        Start quiz
+      </v-btn>
+    </div>
+    <div v-else-if="!isBtnResetQuiz">
       <v-card class="progress-card mb-4" rounded="lg" variant="tonal" color="teal">
         <v-card-text class="pa-4">
           <div class="d-flex align-center justify-space-between mb-3">
@@ -62,6 +113,14 @@
             {{ currentWordObj.part_of_speech }}
           </sup>
         </h2>
+        <v-btn
+          :icon="isFavorite(currentWord) ? 'mdi-star' : 'mdi-star-outline'"
+          :aria-label="isFavorite(currentWord) ? 'Remove from favorites' : 'Add to favorites'"
+          color="teal"
+          size="small"
+          variant="text"
+          @click="$emit('toggle-favorite', currentWord)"
+        />
       </div>
 
       <div v-if="mode === 'list'" class="d-flex flex-column gap-2 mb-6">
@@ -102,6 +161,7 @@
           autofocus
           :persistent-hint="persistentHint"
           :hint="hint"
+          @update:model-value="$nextTick(saveState)"
         />
       </div>
 
@@ -237,7 +297,7 @@
       </v-card-text>
     </v-card>
 
-    <div v-if="!isBtnResetQuiz" class="quiz-stats mt-4">
+    <div v-if="!isBtnResetQuiz && !studying" class="quiz-stats mt-4">
       <v-chip size="small" variant="tonal" color="teal">
         <v-icon start size="small">mdi-check-circle-outline</v-icon>
         {{ stats.correct }} correct
@@ -261,23 +321,31 @@
 <script>
 import {allWords} from '@/data/words'
 import {allIrregularVerbs} from '@/data/irregular-verbs'
+import {wordKey} from '@/quiz-storage'
 
 export default {
   props: {
     settings: {type: Object, required: true},
     countAnswerOptions: {type: Number, default: 10},
+    favorites: {type: Object, default: () => ({})},
+    mistakes: {type: Object, default: () => ({})},
+    initialState: {type: Object, default: null},
     onReset: Function
   },
-  emits: ['answer-list'],
+  emits: ['answer-list', 'toggle-favorite', 'mistake', 'checkpoint', 'complete'],
   data() {
     return {
       dialog: false,
+      studying: false,
+      studyIndex: 0,
+      studyWords: [],
       listWords: [],
       userAnswer: '',
       answerSubmitted: false,
       selectedOption: null,
       mistakenWords: [],
       reviewWords: null,
+      initialWords: null,
       optionWords: [],
       speechError: '',
       nextWordTimeout: null,
@@ -337,6 +405,16 @@ export default {
     currentWord() {
       return this.listWords[this.currentIndex] || null
     },
+    studyWordEnglish() {
+      const word = this.studyWords[this.studyIndex]
+      return this.settings.quiz === 'verbs'
+        ? [word.infinitive, word.past, word.past_participle].join(', ')
+        : word.en
+    },
+    studyWordRussian() {
+      const word = this.studyWords[this.studyIndex]
+      return this.settings.quiz === 'verbs' ? word.translation : word.ru
+    },
     currentWordObj() {
       if (!this.currentWord) return {}
 
@@ -385,7 +463,11 @@ export default {
     }
   },
   mounted() {
-    this.loadWords()
+    if (this.initialState) {
+      this.restoreState(this.initialState)
+    } else {
+      this.loadWords()
+    }
     window.addEventListener('keydown', this.handleKey)
   },
   beforeUnmount() {
@@ -403,13 +485,19 @@ export default {
       if (this.reviewWords) {
         this.listWords = [...this.reviewWords]
       } else if (this.settings.quiz === 'verbs') {
-        this.settings.verbs.forEach(unitPath => {
+        const units = this.settings.verbs.length ? this.settings.verbs
+          : (this.settings.wordFilter !== 'all' ? Object.keys(allIrregularVerbs) : [])
+        units.forEach(unitPath => {
           if (allIrregularVerbs?.[unitPath]) {
             this.listWords.push(...allIrregularVerbs[unitPath])
           }
         })
       } else {
-        this.settings.units.forEach(unitCode => {
+        const units = this.settings.units.length ? this.settings.units
+          : (this.settings.wordFilter !== 'all' && !this.settings.levels.length
+              ? Object.entries(allWords).flatMap(([level, words]) => Object.keys(words).map(unit => `${level}/${unit}`))
+              : [])
+        units.forEach(unitCode => {
           const [level, unit] = unitCode.split('/')
           if (allWords[level] && allWords[level][unit]) {
             const unitWords = allWords[level][unit]
@@ -418,19 +506,72 @@ export default {
         })
       }
 
-      if (!this.reviewWords && this.settings.quiz === 'random') {
-        this.listWords = this.listWords
-          .sort(() => Math.random() - 0.5)
-          .slice(0, this.settings.amount)
-      }
-
       if (!this.reviewWords) {
         this.optionWords = [...this.listWords]
+        const filter = this.settings.wordFilter || 'all'
+        if (filter !== 'all' && this.initialWords) {
+          this.listWords = [...this.initialWords]
+        } else {
+          this.listWords = this.listWords.filter(word => {
+            const key = wordKey(word, this.settings.quiz)
+            return filter === 'all' ||
+              (filter === 'favorites' && this.favorites[key]) ||
+              (filter === 'difficult' && (this.mistakes[key] || 0) >= 2)
+          })
+        }
+        const limit = this.settings.quiz === 'random' ? this.settings.amount : null
+        if (limit) {
+          this.listWords = this.shuffle(this.listWords).slice(0, limit)
+        }
+        if (filter !== 'all' && !this.initialWords) this.initialWords = [...this.listWords]
       }
       this.listWords = this.shuffle(this.listWords)
       this.stats.total = this.listWords.length
       this.stats.remained = this.stats.total
+      if (!this.reviewWords && this.settings.studyFirst) {
+        this.studyWords = [...this.listWords]
+        this.studyIndex = 0
+        this.studying = true
+        this.saveState()
+        return
+      }
       this.nextWord()
+    },
+    isFavorite(word) {
+      return word && !!this.favorites[wordKey(word, this.settings.quiz)]
+    },
+    changeStudyIndex(delta) {
+      this.studyIndex += delta
+      this.speechError = ''
+      this.saveState()
+    },
+    startStudiedQuiz() {
+      this.studying = false
+      this.startTime = new Date()
+      this.nextWord()
+    },
+    saveState() {
+      const keys = ['studying', 'studyIndex', 'studyWords', 'listWords', 'userAnswer',
+        'answerSubmitted', 'selectedOption', 'mistakenWords', 'reviewWords', 'initialWords', 'optionWords',
+        'feedback', 'answeredFeedback', 'answeredIsView', 'helper', 'isCorrect',
+        'isBtnContinue', 'isBtnAnswer', 'isBtnResetQuiz', 'typeCorrect', 'currentIndex',
+        'options', 'answerList', 'question', 'stats', 'resultPercentage', 'resultColor']
+      const state = Object.fromEntries(keys.map(key => [key, this[key]]))
+      state.usedIndexes = [...this.usedIndexes]
+      state.startTime = this.startTime?.toISOString()
+      state.savedAt = new Date().toISOString()
+      this.$emit('checkpoint', state)
+    },
+    restoreState(state) {
+      const {usedIndexes, startTime, savedAt, ...fields} = state
+      Object.assign(this, fields)
+      this.usedIndexes = new Set(usedIndexes)
+      this.startTime = new Date(Date.parse(startTime) + Date.now() - Date.parse(savedAt))
+      if (this.answerSubmitted && this.isCorrect && !this.studying) {
+        this.nextWord()
+      } else {
+        this.saveState()
+      }
     },
     shuffle(array) {
       return array.slice().sort(() => Math.random() - 0.5)
@@ -509,6 +650,7 @@ export default {
           this.nextWord()
         }, 400)
       } else {
+        this.$emit('mistake', this.currentWord)
         const key = this.wordKey(this.currentWord)
         if (!this.mistakenWords.some(word => this.wordKey(word) === key)) {
           this.mistakenWords.push(this.currentWord)
@@ -529,6 +671,7 @@ export default {
       })
 
       this.updateStats(this.isCorrect)
+      this.saveState()
 
     },
     handleMultipleChoice(option) {
@@ -554,6 +697,14 @@ export default {
         this.calculateProgress()
         this.handlerButton(false, false, true)
         this.endTime = new Date()
+        this.$emit('complete', {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          date: this.endTime.toISOString(),
+          score: this.resultPercentage,
+          total: this.stats.total,
+          incorrect: this.stats.incorrect,
+          attempts: this.stats.attempt,
+        })
         return
       }
 
@@ -585,6 +736,7 @@ export default {
       } else {
         this.helper = this.currentWord?.example || null;
       }
+      this.saveState()
     },
     generateOptions(correctAnswer) {
       const answers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
@@ -692,6 +844,9 @@ export default {
         : JSON.stringify([word.en, word.ru, word.part_of_speech])
     },
     speakCorrectAnswer() {
+      this.speakEnglish(this.currentWord)
+    },
+    speakEnglish(word) {
       this.speechError = ''
       if (typeof window.speechSynthesis?.speak !== 'function' ||
           typeof window.SpeechSynthesisUtterance !== 'function') {
@@ -700,8 +855,8 @@ export default {
       }
 
       const english = this.settings.quiz === 'verbs'
-        ? [this.currentWord.infinitive, this.currentWord.past, this.currentWord.past_participle].join(', ')
-        : this.currentWord.en
+        ? [word.infinitive, word.past, word.past_participle].join(', ')
+        : word.en
       const utterance = new window.SpeechSynthesisUtterance(english)
       utterance.lang = 'en-US'
       utterance.onerror = () => {
@@ -710,6 +865,7 @@ export default {
       window.speechSynthesis.speak(utterance)
     },
     handleKey(event) {
+      if (this.studying || this.isBtnResetQuiz) return
       if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey ||
           event.isComposing || document.querySelector('.v-overlay--active')) return
 
@@ -761,8 +917,8 @@ export default {
       this.answerSubmitted = false
       this.selectedOption = null
       this.helper = null
-      this.loadWords()
       this.startTime = new Date()
+      this.loadWords()
     },
     calculateProgress() {
       const totalWords = this.stats.total;
@@ -787,8 +943,13 @@ export default {
 
 .progress-card,
 .answer-card,
+.study-card,
 .result-card {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.study-word {
+  overflow-wrap: anywhere;
 }
 
 .progress-card.v-theme--dark {

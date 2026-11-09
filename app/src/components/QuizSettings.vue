@@ -213,6 +213,29 @@
       </template>
     </v-text-field>
 
+    <v-select
+      v-model="wordFilter"
+      :items="filterOptions"
+      item-title="title"
+      item-value="value"
+      label="Words to study"
+      :density="settings.density"
+      :variant="settings.variant"
+      :color="settings.color"
+    >
+      <template #selection="{ item }" v-if="settings.chips">
+        <v-chip
+          size="small"
+          color="teal"
+          label
+        >
+          <span>{{ item.title }}</span>
+        </v-chip>
+      </template>
+    </v-select>
+
+    <v-switch v-model="studyFirst" label="Study cards before the quiz" :color="settings.color" />
+
     <div v-if="selectedQuiz === 'random' && sliderShow">
       <div class="text-caption">
         Count words: {{ sliderValue }}
@@ -283,9 +306,14 @@ import {allWords, mapLevel} from '@/data/words'
 import {allIrregularVerbs, mapUnit as mapVerbUnit} from '@/data/irregular-verbs'
 import {app} from '@/data/const.js'
 import {useDisplay} from 'vuetify'
+import {wordKey} from '@/quiz-storage'
 
 export default {
   name: 'QuizSettings',
+  props: {
+    favorites: {type: Object, default: () => ({})},
+    mistakes: {type: Object, default: () => ({})},
+  },
   emits: ['words-selected', 'quiz-settings', 'quiz-type'],
   setup() {
     const {xs} = useDisplay()
@@ -306,6 +334,13 @@ export default {
     selectedTrans: app.settings.default.trans,
     selectedMod: app.settings.default.mod,
     mobileAnswerOptions: 4,
+    wordFilter: 'all',
+    filterOptions: [
+      {title: 'All selected words', value: 'all'},
+      {title: 'Favorites', value: 'favorites'},
+      {title: 'Difficult words (2+ mistakes)', value: 'difficult'},
+    ],
+    studyFirst: false,
 
     sliderValue: 50,
     sliderMaxValue: 100,
@@ -378,27 +413,34 @@ export default {
         this.snackbar.show = true;
       };
 
-      if (this.selectedQuiz === 'verbs' && (!this.selectedTrans || this.verbs.length === 0)) {
+      if (this.selectedQuiz === 'verbs' && (!this.selectedTrans || (this.wordFilter === 'all' && this.verbs.length === 0))) {
         showError('All quiz settings are required');
         return;
       }
 
-      if (this.selectedQuiz === 'words' && (!this.selectedTrans || !this.selectedMod || this.levels.length === 0 || this.units.length === 0)) {
+      const needsUnits = this.wordFilter === 'all' || this.levels.length > 0
+      if (this.selectedQuiz === 'words' && (!this.selectedTrans || !this.selectedMod || (needsUnits && (this.levels.length === 0 || this.units.length === 0)))) {
         showError('All quiz settings are required');
         return;
       }
 
-      if (this.selectedQuiz === 'random' && (!this.selectedTrans || !this.selectedMod || this.levels.length === 0 || this.units.length === 0 || this.sliderValue <= 0)) {
+      if (this.selectedQuiz === 'random' && (!this.selectedTrans || !this.selectedMod || (needsUnits && (this.levels.length === 0 || this.units.length === 0)) || this.sliderValue <= 0)) {
         showError('All quiz settings are required');
         return;
       }
 
+      const selectedWords = this.getSelectedWords()
+      const filteredWords = selectedWords.filter(word => {
+        const key = wordKey(word, this.selectedQuiz)
+        return this.wordFilter === 'all' ||
+          (this.wordFilter === 'favorites' && this.favorites[key]) ||
+          (this.wordFilter === 'difficult' && (this.mistakes[key] || 0) >= 2)
+      })
+      if (!filteredWords.length) {
+        showError('No words match the selected filter.')
+        return
+      }
       const countAnswerOptions = this.xs ? this.mobileAnswerOptions : 10
-      if (this.selectedMod === 'list' && this.countWords < countAnswerOptions) {
-        showError(`There must be at least ${countAnswerOptions} words.`);
-        return;
-      }
-
       this.$emit("quiz-settings", {
         quiz: this.selectedQuiz,
         trans: this.selectedTrans,
@@ -408,7 +450,9 @@ export default {
         verbs: this.verbs,
         lastMistake: this.checkbox,
         amount: this.sliderValue,
-        countAnswerOptions
+        countAnswerOptions,
+        wordFilter: this.wordFilter,
+        studyFirst: this.studyFirst
       });
     },
     decrement() {
@@ -437,11 +481,18 @@ export default {
       this.$emit('quiz-type', this.selectedQuiz)
     },
     filterWordsBySelection() {
+      const selected = this.getSelectedWords()
+      this.countWords = selected.length
+      this.$emit('words-selected', selected)
+      this.$emit('quiz-type', this.selectedQuiz)
+    },
+    getSelectedWords() {
       const selected = []
       const seen = new Set()
 
       if (this.selectedQuiz === 'verbs') {
-        this.verbs.forEach(unitCode => {
+        const units = this.verbs.length ? this.verbs : (this.wordFilter !== 'all' ? Object.keys(allIrregularVerbs) : [])
+        units.forEach(unitCode => {
           if (allIrregularVerbs?.[unitCode]) {
             allIrregularVerbs[unitCode].forEach(word => {
               const key = word.infinitive
@@ -453,7 +504,10 @@ export default {
           }
         })
       } else {
-        this.units.forEach(unitCode => {
+        const units = this.units.length ? this.units : (this.wordFilter !== 'all' && !this.levels.length
+          ? Object.entries(allWords).flatMap(([level, words]) => Object.keys(words).map(unit => `${level}/${unit}`))
+          : [])
+        units.forEach(unitCode => {
           const [level, unit] = unitCode.split('/')
           if (allWords[level] && allWords[level][unit]) {
             allWords[level][unit].forEach(word => {
@@ -467,9 +521,7 @@ export default {
         })
       }
 
-      this.countWords = selected.length
-      this.$emit('words-selected', selected)
-      this.$emit('quiz-type', this.selectedQuiz)
+      return selected
     }
   },
   watch: {
@@ -540,4 +592,3 @@ export default {
   }
 }
 </script>
-

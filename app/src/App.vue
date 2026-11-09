@@ -25,9 +25,21 @@
       <v-main>
         <v-container>
           <div class="mx-auto" style="max-width: 500px;">
+            <v-alert v-if="storageError" type="error" variant="tonal" class="mt-4" closable @click:close="storageError = ''">
+              {{ storageError }}
+            </v-alert>
+            <v-card v-if="!settings && learning.active" class="mt-4" variant="tonal" color="teal">
+              <v-card-text>Continue your unfinished quiz?</v-card-text>
+              <v-card-actions>
+                <v-btn @click="resumeQuiz">Continue</v-btn>
+                <v-btn @click="discardQuiz">Start over</v-btn>
+              </v-card-actions>
+            </v-card>
             <QuizSettings
-              v-if="!settings"
+              v-if="!settings && !learning.active"
               :key="'settings-' + resetKey"
+              :favorites="learning.favorites"
+              :mistakes="learning.mistakes"
               @words-selected="updateWords"
               @quiz-type="quizType"
               @quiz-settings="setQuizSettings"
@@ -38,9 +50,31 @@
               :key="'question-' + resetKey"
               :settings="settings"
               :count-answer-options="settings.countAnswerOptions"
+              :favorites="learning.favorites"
+              :mistakes="learning.mistakes"
+              :initial-state="resumeState"
               @answer-list="updateAnswerList"
+              @toggle-favorite="toggleFavorite"
+              @mistake="recordMistake"
+              @checkpoint="saveCheckpoint"
+              @complete="saveResult"
               :on-reset="confirmReset"
             />
+
+            <v-expansion-panels v-if="!settings && learning.history.length" class="mt-4">
+              <v-expansion-panel title="Quiz history">
+                <v-expansion-panel-text>
+                  <div v-for="day in historyByDay" :key="day.date" class="mb-2 text-body-2">
+                    {{ day.date }} · {{ day.count }} quizzes · average {{ day.average }}%
+                  </div>
+                  <v-divider class="my-3" />
+                  <div v-for="result in learning.history.slice().reverse()" :key="result.id" class="mb-3">
+                    <strong>{{ result.score }}%</strong> · {{ new Date(result.date).toLocaleString() }}
+                    <div class="text-body-2">{{ result.total }} words · {{ result.incorrect }} mistakes · {{ result.attempts }} attempts</div>
+                  </div>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
 
             <QuizTable
               v-if="selectedWords.length && !settings"
@@ -153,12 +187,77 @@
 </template>
 
 <script setup>
-import {shallowRef, watch, ref} from 'vue'
+import {computed, shallowRef, watch, ref} from 'vue'
+import {readLearningData, writeLearningData, wordKey} from '@/quiz-storage'
 import logoLight from '@/assets/logo.png'
 import logoDark from '@/assets/logoD.png'
 
 const theme = ref('light')
 provide('theme', theme)
+
+const learning = ref({ favorites: {}, mistakes: {}, history: [], active: null })
+const storageError = ref('')
+let storageReadable = true
+try {
+  learning.value = readLearningData(window.localStorage)
+} catch (error) {
+  storageReadable = false
+  storageError.value = `Unable to load saved learning data: ${error.message}`
+}
+const resumeState = ref(null)
+const historyByDay = computed(() => {
+  const days = new Map()
+  for (const result of learning.value.history) {
+    const date = new Date(result.date).toLocaleDateString()
+    const day = days.get(date) || {date, count: 0, total: 0}
+    day.count++
+    day.total += result.score
+    days.set(date, day)
+  }
+  return [...days.values()].reverse().map(day => ({
+    ...day, average: Math.round(day.total / day.count),
+  }))
+})
+function persist() {
+  if (!storageReadable) {
+    storageError.value = 'Saved learning data could not be loaded and will not be overwritten.'
+    return
+  }
+  try {
+    writeLearningData(window.localStorage, learning.value)
+  } catch (error) {
+    storageError.value = `Unable to save learning data: ${error.message}`
+  }
+}
+function toggleFavorite(word) {
+  const key = wordKey(word, settings.value.quiz)
+  if (learning.value.favorites[key]) delete learning.value.favorites[key]
+  else learning.value.favorites[key] = true
+  persist()
+}
+function recordMistake(word) {
+  const key = wordKey(word, settings.value.quiz)
+  learning.value.mistakes[key] = (learning.value.mistakes[key] || 0) + 1
+  persist()
+}
+function saveCheckpoint(state) {
+  learning.value.active = { settings: settings.value, state }
+  persist()
+}
+function saveResult(result) {
+  learning.value.history.push(result)
+  learning.value.active = null
+  persist()
+}
+function resumeQuiz() {
+  resumeState.value = learning.value.active.state
+  settings.value = learning.value.active.settings
+  answerWordList.value = resumeState.value.answerList
+}
+function discardQuiz() {
+  learning.value.active = null
+  persist()
+}
 
 const selectedQuiz = ref('words')
 const selectedWords = ref([])
@@ -196,6 +295,8 @@ function updateWords(words) {
 }
 
 function setQuizSettings(quizSettings) {
+  if (learning.value.active) discardQuiz()
+  resumeState.value = null
   settings.value = quizSettings
 }
 
@@ -208,6 +309,8 @@ function updateAnswerList(list) {
 }
 
 function confirmReset() {
+  if (settings.value) discardQuiz()
+  resumeState.value = null
   selectedQuiz.value = 'words'
   selectedWords.value = []
   settings.value = null
