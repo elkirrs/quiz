@@ -1,40 +1,60 @@
 <template>
-  <div>
+  <div class="quiz-layout">
     <div v-if="!isBtnResetQuiz">
+      <v-card class="progress-card mb-4" rounded="lg" variant="tonal" color="teal">
+        <v-card-text class="pa-4">
+          <div class="d-flex align-center justify-space-between mb-3">
+            <div>
+              <div class="text-caption text-medium-emphasis">LEARNING PROGRESS</div>
+              <div class="text-body-1 font-weight-medium">
+                {{ stats.correct }} of {{ stats.total }} learned
+              </div>
+            </div>
+            <v-chip size="small" variant="flat" color="teal">
+              {{ Math.round(progressPercentage) }}%
+            </v-chip>
+          </div>
+          <v-progress-linear
+            :model-value="progressPercentage"
+            color="teal"
+            bg-color="surface"
+            rounded
+            height="8"
+          />
+        </v-card-text>
+      </v-card>
+
       <div class="d-flex align-center justify-space-between mb-4">
         <p class="mb-0 text-h5">How is the word translated?</p>
         <v-btn
           v-if="helper !== null"
-          @click="dialog = true"
-          icon
+          icon="mdi-information-outline"
           size="small"
           color="primary"
           variant="text"
-        >
-          <v-icon>mdi-information-outline</v-icon>
-        </v-btn>
-
-        <v-dialog v-model="dialog" max-width="500">
-          <template v-slot:default="{ isActive }">
-            <v-card rounded="lg">
-              <v-card-title class="d-flex justify-space-between align-center">
-                <div class="text-h5 text-medium-emphasis ps-2">Helper</div>
-                <v-btn icon="mdi-close" variant="text" @click="isActive.value = false"></v-btn>
-              </v-card-title>
-              <v-divider class="mb-4"></v-divider>
-              <v-card-text>
-                <div class="text-medium-emphasis mb-4" v-html="helper"></div>
-              </v-card-text>
-            </v-card>
-          </template>
-        </v-dialog>
+          aria-label="Show hint"
+          @click="dialog = true"
+        />
       </div>
+
+      <v-dialog v-model="dialog" max-width="500">
+        <template v-slot:default="{ isActive }">
+          <v-card rounded="lg">
+            <v-card-title class="d-flex justify-space-between align-center">
+              <div class="text-h5 text-medium-emphasis ps-2">Helper</div>
+              <v-btn icon="mdi-close" variant="text" @click="isActive.value = false"></v-btn>
+            </v-card-title>
+            <v-divider class="mb-4"></v-divider>
+            <v-card-text>
+              <div class="text-medium-emphasis mb-4" v-html="helper"></div>
+            </v-card-text>
+          </v-card>
+        </template>
+      </v-dialog>
 
       <div class="text-center mb-4">
         <h2 class="text-h5 mb-1">
-          <strong>
-            {{ question }}
-          </strong>
+          <strong>{{ question }}</strong>
           <sup
             class="ml-2 mb-3 text-grey"
             style="font-size: 0.6em;"
@@ -44,143 +64,166 @@
         </h2>
       </div>
 
-      <!-- LIST -->
       <div v-if="mode === 'list'" class="d-flex flex-column gap-2 mb-6">
-
         <v-row align="center" justify="center" no-gutters>
-          <v-col v-for="option in options" cols="6" class="pa-2">
+          <v-col
+            v-for="(option, index) in options"
+            :key="`${index}-${option}`"
+            cols="6"
+            class="pa-2"
+          >
             <v-btn
-              @click="handleMultipleChoice(option)"
+              class="custom-button text-lowercase pa-2"
               variant="outlined"
               block
               color="teal"
-              class="custom-button text-lowercase pa-2"
+              @click="handleMultipleChoice(option)"
             >
-            <span class="btn-text-wrap">
-              {{ option }}
-            </span>
+              <span class="btn-text-wrap">{{ option }}</span>
             </v-btn>
           </v-col>
         </v-row>
-
       </div>
-      <!-- MANUAL -->
-      <div v-if="mode === 'manual' && !isBtnContinue" class="pb-1">
+
+      <div v-if="mode === 'manual' && !isBtnContinue" class="mb-4">
         <v-text-field
           v-model="userAnswer"
           clearable
-          label="Enter the translation of the word..."
+          label="Enter your answer"
           variant="outlined"
           density="comfortable"
           color="teal"
           autofocus
           :persistent-hint="persistentHint"
           :hint="hint"
-        ></v-text-field>
+          @keyup.enter="checkAnswer"
+        />
       </div>
-    </div>
 
-    <div v-if="mode === 'manual'">
-      <v-text-field
-        v-if="answeredIsView"
-        v-model="answeredFeedback"
-        disabled
-        label="Entered the translation of the word..."
-        variant="outlined"
-        density="comfortable"
-        color="teal"
-      ></v-text-field>
-    </div>
+      <div v-if="mode === 'manual' && answeredIsView" class="mb-4">
+        <v-text-field
+          v-model="answeredFeedback"
+          disabled
+          label="Your answer"
+          variant="outlined"
+          density="comfortable"
+          color="teal"
+          hide-details
+        />
+      </div>
 
-    <div class="pb-4">
       <v-alert
         v-if="feedback"
+        class="mb-4"
         :type="typeCorrect"
         density="comfortable"
         variant="tonal"
-        border="start"
+        rounded="lg"
       >
         <div v-html="feedback"></div>
       </v-alert>
-    </div>
 
-    <div>
       <v-btn
-        block
-        size="large"
-        color="teal"
         v-if="isBtnAnswer"
-        @click="checkAnswer"
-      >To answer
-      </v-btn>
-    </div>
-
-    <div>
-      <v-btn
         block
         size="large"
         color="teal"
+        rounded="lg"
+        class="quiz-action"
+        :disabled="mode === 'manual' && !userAnswer.trim()"
+        @click="checkAnswer"
+      >
+        Check answer
+      </v-btn>
+
+      <v-btn
         v-if="isBtnContinue"
+        block
+        size="large"
+        color="teal"
+        rounded="lg"
+        class="quiz-action"
         @click="nextWord"
         ref="continueBtn"
       >
-        To continue
+        Continue
+        <v-icon end>mdi-arrow-right</v-icon>
       </v-btn>
     </div>
 
-    <v-row justify="center"
-           v-if="isBtnResetQuiz"
-           class="ma-5"
-    >
-      <div class="text-center">
-        <v-progress-circular
-          :model-value="resultPercentage"
-          :rotate="360"
-          :size="120"
-          :width="15"
-          :color="resultColor"
-        >
-          <div class="text-h5 font-weight-bold">
-            {{ resultPercentage }}%
+    <v-card v-if="isBtnResetQuiz" class="result-card" rounded="xl" elevation="2">
+      <v-card-text class="pa-5 pa-sm-7">
+        <div class="text-center mb-5">
+          <v-avatar color="teal" variant="tonal" size="56" class="mb-3">
+            <v-icon size="30">mdi-trophy-outline</v-icon>
+          </v-avatar>
+          <div class="text-h5 font-weight-bold">Quiz complete</div>
+          <div class="text-body-2 text-medium-emphasis mt-1">Here is your result</div>
+        </div>
+
+        <div class="result-score">
+          <v-progress-circular
+            :model-value="resultPercentage"
+            :rotate="360"
+            :size="128"
+            :width="12"
+            :color="resultColor"
+          >
+            <div class="text-h4 font-weight-bold">{{ resultPercentage }}%</div>
+          </v-progress-circular>
+          <div class="text-body-2 text-medium-emphasis mt-3">Final score</div>
+        </div>
+
+        <v-divider class="my-5" />
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.correct }}</span>
+            <span class="stat-label">Correct</span>
           </div>
-        </v-progress-circular>
-      </div>
-      <div class="d-flex ga-12 justify-center">
-        <v-badge location="top right" color="teal" :content="spentTime">
-        </v-badge>
-      </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.incorrect }}</span>
+            <span class="stat-label">Mistakes</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.attempt }}</span>
+            <span class="stat-label">Attempts</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ spentTime }}</span>
+            <span class="stat-label">Time</span>
+          </div>
+        </div>
 
-    </v-row>
+        <v-row class="mt-4" dense>
+          <v-col cols="12" sm="6">
+            <v-btn block size="large" color="teal" rounded="lg" @click="restartQuiz">
+              <v-icon start>mdi-refresh</v-icon>
+              Restart
+            </v-btn>
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-btn block size="large" variant="outlined" color="teal" rounded="lg" @click="onReset">
+              New quiz
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
 
-    <v-row justify="center">
-      <v-col cols="6">
-        <v-btn
-          block
-          size="large"
-          color="teal"
-          v-if="isBtnResetQuiz"
-          @click="restartQuiz"
-        >
-          Restart quiz
-        </v-btn>
-      </v-col>
-
-      <v-col cols="6">
-        <v-btn
-          block
-          size="large"
-          color="teal"
-          v-if="isBtnResetQuiz"
-          @click="onReset"
-        >
-          New quiz
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <div class="text-caption mt-4 text-right">
-      Total: {{ stats.total }} | Correct: {{ stats.correct }} | Incorrect: {{ stats.incorrect }} | Remaining:
-      {{ stats.remained }} | Attempt: {{ stats.attempt }}
+    <div v-if="!isBtnResetQuiz" class="quiz-stats mt-4">
+      <v-chip size="small" variant="tonal" color="teal">
+        <v-icon start size="small">mdi-check-circle-outline</v-icon>
+        {{ stats.correct }} correct
+      </v-chip>
+      <v-chip size="small" variant="tonal" color="error">
+        <v-icon start size="small">mdi-close-circle-outline</v-icon>
+        {{ stats.incorrect }} mistakes
+      </v-chip>
+      <v-chip size="small" variant="tonal">
+        <v-icon start size="small">mdi-counter</v-icon>
+        {{ stats.remained }} left
+      </v-chip>
     </div>
   </div>
 </template>
@@ -250,6 +293,11 @@ export default {
     },
     direction() {
       return this.settings.trans || 'en-ru'
+    },
+    progressPercentage() {
+      return this.stats.total
+        ? (this.stats.correct / this.stats.total) * 100
+        : 0
     },
     currentWord() {
       return this.listWords[this.currentIndex] || null
@@ -635,7 +683,17 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.quiz-layout {
+  padding: clamp(0.75rem, 3vw, 1.5rem) 0 6rem;
+}
+
+.progress-card,
+.answer-card,
+.result-card {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
 .btn-text-wrap {
   white-space: normal !important;
   word-break: break-word;
@@ -649,5 +707,62 @@ export default {
 .custom-button {
   height: 64px;
   min-height: 48px;
+}
+
+.quiz-action {
+  min-height: 3.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.quiz-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.result-card {
+  max-width: 34rem;
+  margin: 1.5rem auto;
+}
+
+.result-score {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.stat-item {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.75rem;
+  background: rgba(var(--v-theme-teal), 0.06);
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.stat-label {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  font-size: 0.75rem;
+}
+
+@media (min-width: 600px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 </style>
