@@ -72,24 +72,11 @@
             :model-value="progressPercentage"
             color="teal"
             bg-color="surface"
-            rounded
+            rounded="lg"
             height="8"
           />
         </v-card-text>
       </v-card>
-
-      <div class="d-flex align-center justify-space-between mb-4">
-        <p class="mb-0 text-h5">{{ $t('How is the word translated?') }}</p>
-        <v-btn
-          v-if="helper !== null"
-          icon="mdi-information-outline"
-          size="small"
-          color="primary"
-          variant="text"
-          :aria-label="$t('Show hint')"
-          @click="dialog = true"
-        />
-      </div>
 
       <v-dialog v-model="dialog" max-width="500">
         <template v-slot:default="{ isActive }">
@@ -106,25 +93,44 @@
         </template>
       </v-dialog>
 
-      <div class="text-center mb-4">
-        <h2 class="text-h5 mb-1">
-          <strong>{{ question }}</strong>
-          <sup
-            class="ml-2 mb-3 text-grey"
-            style="font-size: 0.6em;"
-          >
-            {{ currentWordObj.part_of_speech }}
-          </sup>
-        </h2>
-        <v-btn
-          :icon="isFavorite(currentWord) ? 'mdi-star' : 'mdi-star-outline'"
-          :aria-label="$t(isFavorite(currentWord) ? 'Remove from favorites' : 'Add to favorites')"
-          color="teal"
-          size="small"
-          variant="text"
-          @click="$emit('toggle-favorite', currentWord)"
-        />
-      </div>
+      <v-card class="study-card mb-4" rounded="lg" elevation="2">
+        <v-card-text class="text-center pa-3 pa-sm-4">
+          <div class="question-heading">
+            <div class="text-body-1 text-medium-emphasis">{{ $t('How is the word translated?') }}</div>
+            <div class="question-actions">
+              <v-btn
+                v-if="helper !== null"
+                icon="mdi-information-outline"
+                size="small"
+                color="primary"
+                variant="text"
+                :aria-label="$t('Show hint')"
+                @click="dialog = true"
+              />
+              <v-btn
+                :icon="isFavorite(currentWord) ? 'mdi-star' : 'mdi-star-outline'"
+                :aria-label="$t(isFavorite(currentWord) ? 'Remove from favorites' : 'Add to favorites')"
+                color="teal"
+                size="small"
+                variant="text"
+                @click="$emit('toggle-favorite', currentWord)"
+              />
+            </div>
+          </div>
+          <div class="question-word">
+            <h2 class="study-word text-h5 font-weight-bold">{{ question }}</h2>
+            <v-chip
+              v-if="currentWordObj.part_of_speech"
+              size="small"
+              variant="tonal"
+              color="teal"
+              label
+            >
+              {{ currentWordObj.part_of_speech }}
+            </v-chip>
+          </div>
+        </v-card-text>
+      </v-card>
 
       <div v-if="mode === 'list'" class="d-flex flex-column gap-2 mb-6">
         <v-row align="stretch" justify="center" no-gutters>
@@ -234,7 +240,7 @@
       </v-btn>
     </div>
 
-    <v-card v-if="isBtnResetQuiz" class="result-card" rounded="xl" elevation="2">
+    <v-card v-if="isBtnResetQuiz" class="result-card" rounded="lg" elevation="2">
       <v-card-text class="pa-5 pa-sm-7">
         <div class="text-center mb-5">
           <v-avatar color="teal" variant="tonal" size="56" class="mb-3">
@@ -260,19 +266,19 @@
         <v-divider class="my-5" />
 
         <div class="stats-grid">
-          <div class="stat-item">
+          <div class="stat-item rounded-lg">
             <span class="stat-value">{{ stats.correct }}</span>
             <span class="stat-label">{{ $t('Correct') }}</span>
           </div>
-          <div class="stat-item">
+          <div class="stat-item rounded-lg">
             <span class="stat-value">{{ stats.incorrect }}</span>
             <span class="stat-label">{{ $t('Mistakes') }}</span>
           </div>
-          <div class="stat-item">
+          <div class="stat-item rounded-lg">
             <span class="stat-value">{{ stats.attempt }}</span>
             <span class="stat-label">{{ $t('Attempts') }}</span>
           </div>
-          <div class="stat-item">
+          <div class="stat-item rounded-lg">
             <span class="stat-value">{{ spentTime }}</span>
             <span class="stat-label">{{ $t('Time') }}</span>
           </div>
@@ -969,6 +975,28 @@ export default {
   position: relative;
 }
 
+.question-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.question-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.question-word {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .study-favorite {
   position: absolute;
   right: -0.75rem;
@@ -1088,7 +1116,6 @@ export default {
   justify-items: center;
   gap: 0.25rem;
   padding: 0.75rem 0.5rem;
-  border-radius: 0.75rem;
   background: rgba(var(--v-theme-teal), 0.06);
   text-align: center;
 }

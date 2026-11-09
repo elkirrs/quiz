@@ -1,5 +1,5 @@
 <template>
-  <v-responsive class="border rounded">
+  <v-responsive class="border rounded-lg">
     <v-app :theme="theme">
       <v-app-bar class="px-3">
         <v-img
